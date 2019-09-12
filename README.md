@@ -1,5 +1,5 @@
 # teapot
-![Logo](teapot-logo-small.png) ![Screenshot](teapot-screenshot.png)
+![Logo](images/teapot-logo-small.png) ![Screenshot](images/teapot-screenshot.png)
 
 ## What is teapot?
 **teapot** is a recursive acronym, short for *teapot, enjoy a peaceful, open tune*. Legend has it that the *o* actually stands for *oraguntan*, but $CREATOR will never tell. Let's also pretend that the *o* stands for *open* in reference to Open Source, and not because I couldn't think of any other words that start with *o*.
