@@ -1,0 +1,149 @@
+#!/bin/bash
+
+#Finds number of songs in directory (MUSIC_DIR)
+function num_songs() {
+        echo $(ls -l $MUSIC_DIR/*.mp3 *.wav *.m4a *.aif *.flac 2> /dev/null | wc -l)
+        #Note: the command "2> /dev/null" redirects error messages, but leaves regular output
+}
+
+#Prints formatting, plays random song
+function play_song() {
+	#Get random index out of NUM_SONGS
+	RAND_INDEX=$(($RANDOM % $NUM_SONGS))
+
+	#Create array of all .mp3 files in MUSIC_DIR
+	cd $MUSIC_DIR
+	MUSIC_LIST=( *.mp3 *.wav *.m4a *.aif *.flac ) #Array of all .music files
+
+	#formatting
+	tput rmam #disables line wrap
+	echo " _______________________________"
+	echo "| \___===____________________()_\ "
+	echo "| |                              |"
+	echo "| |   _________________________  |"
+	echo "| |  |                        |  |"
+	echo "| |  |                        |  |"
+	echo "| |   ${MUSIC_LIST[$RAND_INDEX]}  "
+	echo "| |  |                        |  |"
+	echo "| |  |________________________|  |"
+	echo "| |                              |"
+	echo "| |                              |"
+	echo "| |              @@@@            |"
+	echo "| |           @@@ ❤︎❤︎ @@@         |"
+	echo "| |          @@@@@@@@@@@@        |"
+	echo "| |         @<<@@@()@@@>>@       |"
+	echo "| |          @@@@@@@@@@@@        |"
+	echo "| |           @@@ ||>@@@         |"
+	echo "| |              @@@@            |"
+	echo "| |                              |"
+	echo " \|______________________________|"
+	tput smam #enables line wrap
+
+	#Play song file (process runs in the background)
+	afplay $MUSIC_DIR/"${MUSIC_LIST[$RAND_INDEX]}" &
+}
+
+#Prints options [n(ext song), q(uit)]
+function give_options() {
+	echo  "(n)ext, (q)uit"
+	read OPTION
+
+	if [ "$OPTION" = "n" ]; then
+		killall afplay &> /dev/null
+		clear
+	elif [ "$OPTION" = "q" ]; then
+		killall afplay &> /dev/null
+		clear
+		exit 0
+	else
+		give_options
+	fi
+}
+
+#The script will start executing here
+
+# ======= Set MUSIC_DIR to proper path to audio files =======
+MUSIC_DIR=~/Downloads #default directory
+
+#If the number of args > 1, exit
+if [ "$#" -gt 1 ]; then
+	tput bold
+	echo "Check your arguments! Only provide an [optional] path to your music directory."
+	tput sgr0
+	exit 1 
+
+#If the number of args = 1, that arg must be the path
+elif [ "$#" -eq 1 ]; then
+	#Check if specified arg is a proper path
+	if [[ -d "$1" ]]; then
+		MUSIC_DIR="$1"
+	#Specified arg is not a valid path, exit.
+	else
+		tput bold
+		echo "$1 is not a valid path to a directory, try again."
+		tput sgr0
+		exit 1
+	fi
+fi
+
+#Get the number of songs in the specified directory
+NUM_SONGS=$(num_songs)
+if [ $NUM_SONGS -eq 0 ]; then
+	tput bold
+	echo "Found no songs in specified directory!"
+	tput sgr0
+	exit 1
+fi
+
+clear
+# ======= MAIN EXECUTION LOOP =======
+while :
+do
+	play_song
+	give_options
+done
+
+echo "We should never get here."
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#======== GARBAGE CODE ======== 
+#KILLALL KILLS ALL
+#screen -dmS Example 'afplay $MUSIC_DIR/"${MUSIC_LIST[$RAND_INDEX]}"'
+#exit 0
+#~/scripts/play_music
+#clear
+#play_song
+#echo "PLAYING SONG #: $RAND_INDEX"
+#read -p "(n)ext, (q)uit" OPTION
+#OPTION=0
+#echo "Entered while and do"
+#echo "NUM SONGS: $NUM_SONGS"
+#sleep 0.1 #allow time for screen to clear
+#fold -w 35 -s
+#echo -e "| |  |${MUSIC_LIST[$RAND_INDEX]}\t|" | fold -w 35 -s
+#echo "=================================================================="
+#echo -e "\n\t"${MUSIC_LIST[$RAND_INDEX]}"\n"
+#echo "=================================================================="
+
+#issues:
+#When song ends, next song doesn't automatically start
+#Occasionally first song takes some time to start
+#Sometimes output of killall doesn't clear (used sleep to combat that, but makes it feel slow)
+#Want to change background color to make it look prettier
+#Maybe make default into PWD, not Downloads
+
