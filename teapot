@@ -15,7 +15,7 @@ function play_song() {
 	cd $MUSIC_DIR
 	MUSIC_LIST=( *.mp3 *.wav *.m4a *.aif *.flac ) #Array of all .music files
 
-	#formatting
+	#formatting (optimized for 80 by 24 terminal window)
 	tput rmam #disables line wrap
 	echo " _______________________________"
 	echo "| \___===____________________()_\ "
@@ -104,46 +104,3 @@ do
 done
 
 echo "We should never get here."
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#======== GARBAGE CODE ======== 
-#KILLALL KILLS ALL
-#screen -dmS Example 'afplay $MUSIC_DIR/"${MUSIC_LIST[$RAND_INDEX]}"'
-#exit 0
-#~/scripts/play_music
-#clear
-#play_song
-#echo "PLAYING SONG #: $RAND_INDEX"
-#read -p "(n)ext, (q)uit" OPTION
-#OPTION=0
-#echo "Entered while and do"
-#echo "NUM SONGS: $NUM_SONGS"
-#sleep 0.1 #allow time for screen to clear
-#fold -w 35 -s
-#echo -e "| |  |${MUSIC_LIST[$RAND_INDEX]}\t|" | fold -w 35 -s
-#echo "=================================================================="
-#echo -e "\n\t"${MUSIC_LIST[$RAND_INDEX]}"\n"
-#echo "=================================================================="
-
-#issues:
-#When song ends, next song doesn't automatically start
-#Occasionally first song takes some time to start
-#Sometimes output of killall doesn't clear (used sleep to combat that, but makes it feel slow)
-#Want to change background color to make it look prettier
-#Maybe make default into PWD, not Downloads
-
