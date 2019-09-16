@@ -18,7 +18,7 @@ function clearscreen() {
 }
 
 function ctrl_c() {
-    killall afplay &> /dev/null
+	killall afplay &> /dev/null
 	clearscreen 
 	exit 0
 }
@@ -46,7 +46,7 @@ function float_to_int() {
 
 #Finds number of songs in directory (MUSIC_DIR)
 function num_songs() {
-    echo $(ls -l "$MUSIC_DIR"/*.mp3 *.wav *.m4a *.aif *.flac 2> /dev/null | wc -l)
+	echo $(ls -l "$MUSIC_DIR"/*.mp3 *.wav *.m4a *.aif *.flac 2> /dev/null | wc -l)
     #Note: the command "2> /dev/null" redirects error messages, but leaves regular output
 }
 # ========== /HELPER FUNCTIONS ==========
@@ -204,12 +204,13 @@ if [ $NUM_SONGS -eq 0 ]; then
 	exit 1
 fi
 
+# ============ MAIN EXECUTION LOOP ============ #
+clearscreen
+
 #Value is changed by give_options when user specifies an index
 #Value is reset to SHUFFLE by play_song whenever a new song is played
 REQUESTED_INDEX="SHUFFLE" #Begin by shuffling music
 
-# ============ MAIN EXECUTION LOOP ============ #
-clearscreen
 while :;
 do	
 	play_song "$REQUESTED_INDEX"
