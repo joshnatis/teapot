@@ -1,19 +1,66 @@
 #!/bin/bash
 
-#Finds number of songs in directory (MUSIC_DIR)
-function num_songs() {
-        echo $(ls -l $MUSIC_DIR/*.mp3 *.wav *.m4a *.aif *.flac 2> /dev/null | wc -l)
-        #Note: the command "2> /dev/null" redirects error messages, but leaves regular output
+#TODO - replace *.mp3 *.wav etc with EXTENSIONS variable
+#TODO - port to linux (afinfo)
+#TODO - if possible, pause
+#TODO - make .config, replace $MUSIC_DIR with user's default for good
+#TODO - go back to browse songs again after clicking q in less
+#TODO - fix youtube-dl failing but printing successful output (maybe just remove that message)
+#TODO - update array after downloading new song 
+#TODO - allow user to (r)efresh (ascii animation of water being drank), recreate array
+	#OR after every update refresh array (expensive)
+#TODO - add (r)ename option (enter new name: mv $MUSIC_DIR/MUSIC_LIST(SONG_INDEX $MUSIC_DIR/new name)
+#TODO - loop feature (dont update SONGINDEX)
+
+# ========== HELPER FUNCTIONS ==========
+function clearscreen() {
+	clear && printf '\e[3J'
 }
 
-#Prints formatting, plays random song
-function play_song() {
-	#Get random index out of NUM_SONGS
-	RAND_INDEX=$(($RANDOM % $NUM_SONGS))
+function ctrl_c() {
+    killall afplay &> /dev/null
+	clearscreen 
+	exit 0
+}
 
-	#Create array of all .mp3 files in MUSIC_DIR
-	cd $MUSIC_DIR
-	MUSIC_LIST=( *.mp3 *.wav *.m4a *.aif *.flac ) #Array of all .music files
+function pkg_installed() {
+	man "$1" &> /dev/null
+	status=$? #if the man page exists status will be 0, else 1
+	return $status
+}
+
+function is_not_digit() {
+	re='^[0-9]+$'
+	if ! [[ "$1" =~ $re ]] ; then # $1 is not a digit, return error code 0 (sucess)
+   		return 0
+   	else
+   		return 1 # $1 is a digit, return error code 1 (failure)
+	fi
+}
+
+#Ceiling + 1 using bc
+function float_to_int() {
+	var=`echo "$1/1 + 2" | bc`
+	echo $var
+}
+
+#Finds number of songs in directory (MUSIC_DIR)
+function num_songs() {
+    echo $(ls -l "$MUSIC_DIR"/*.mp3 *.wav *.m4a *.aif *.flac 2> /dev/null | wc -l)
+    #Note: the command "2> /dev/null" redirects error messages, but leaves regular output
+}
+# ========== /HELPER FUNCTIONS ==========
+
+#Prints formatting, plays random song, defines a global variable with duration of current song
+function play_song() {
+	if [ "$1" = "SHUFFLE" ]; then
+		SONG_INDEX=$(($RANDOM % $NUM_SONGS)) #Get random index in range of NUM_SONGS
+	elif [ "$1" = "PRINT_ASCII" ]; then
+		: #do nothing, this option is just for re-printing the mp3 player ascii art 
+	else
+		SONG_INDEX="$1"
+		REQUESTED_INDEX="SHUFFLE" #resets for next time
+	fi
 
 	#formatting (optimized for 80 by 24 terminal window)
 	tput rmam #disables line wrap
@@ -23,7 +70,7 @@ function play_song() {
 	echo "| |   _________________________  |"
 	echo "| |  |                        |  |"
 	echo "| |  |                        |  |"
-	echo "| |   ${MUSIC_LIST[$RAND_INDEX]}  "
+	echo "| |   ${MUSIC_LIST[$SONG_INDEX]}  "
 	echo "| |  |                        |  |"
 	echo "| |  |________________________|  |"
 	echo "| |                              |"
@@ -37,33 +84,98 @@ function play_song() {
 	echo "| |              @@@@            |"
 	echo "| |                              |"
 	echo " \|______________________________|"
-	tput smam #enables line wrap
+	tput smam #re-enables line wrap
 
-	#Play song file (process runs in the background)
-	afplay $MUSIC_DIR/"${MUSIC_LIST[$RAND_INDEX]}" &
+	#if we're not just printing the ascii, go on and play the song
+	if [ "$1" != "PRINT_ASCII" ]; then
+		#Duration of current song in seconds (global variable)
+		FLOAT_DURATION=$(afinfo "$MUSIC_DIR"/"${MUSIC_LIST[$SONG_INDEX]}" | awk '/estimated duration/ { print $3 }')
+
+		#Play song file (process runs in the background)
+		afplay "$MUSIC_DIR"/"${MUSIC_LIST[$SONG_INDEX]}" &
+	fi
 }
 
-#Prints options [n(ext song), q(uit)]
+#Prints options, times out after song ends so another one can play
 function give_options() {
-	echo  "(n)ext, (q)uit"
-	read OPTION
+	#If no option is provided before the song stops playing, then go to the next song
+	#"TIMEOUT" is a default value; if $OPTION still equals "TIMEOUT" after read, we know the user didn't input anything
+	OPTION="TIMEOUT"
 
-	if [ "$OPTION" = "n" ]; then
+	#will be 1 if user attempts to issue invalid command, blank otherwise
+	RETRY=$2
+
+	echo "(n)ext, (q)uit, (l)ist songs, (d)ownload"
+
+	#If user entered invalid option, we don't want to reset the read timer
+	if [ RETRY = "1" ]; then
+		read OPTION
+	#This is our first time presenting user with options, set the timer for duration of the song
+	else
+		read -t $INT_DURATION OPTION
+	fi
+
+# =========== OPTIONS ===========
+	#Next song; OR song duration has expired
+	if [ "$OPTION" = "n" ] || [ "$OPTION" = "TIMEOUT" ]; then
 		killall afplay &> /dev/null
-		clear
+		clearscreen
+
+	#quit
 	elif [ "$OPTION" = "q" ]; then
 		killall afplay &> /dev/null
-		clear
+		clearscreen
 		exit 0
+
+	#list songs to choose from
+	elif [ "$OPTION" = "l" ]; then
+		clearscreen; tput bold
+		echo "=== Note the index of the file you want to play ==="
+		echo "=== Hit [q] when finished browsing === "; echo 
+		echo "=== Hit [ENTER] to continue === "
+		read -t 6; clearscreen
+
+		#List files/indexes for user and allow them to scroll through in less
+		#NF - Last field (File name), NR - Row number, less -S turns off word fold
+		find "$MUSIC_DIR"/*.mp3 | awk -F'/' '{print "["NR-1"]\t" $NF}' | less -S
+		
+		#Read index and make sure it's in range/a digit
+		while read -p "play song #: " REQUESTED_INDEX && is_not_digit "$REQUESTED_INDEX" || [ "$REQUESTED_INDEX" -gt $NUM_SONGS ] || [ "$REQUESTED_INDEX" -lt 0 ]; do
+  			echo "Index is invalid."
+		done
+
+		tput sgr0
+		killall afplay &> /dev/null
+		clearscreen
+
+	elif [ "$OPTION" = "d" ]; then
+		if pkg_installed "youtube-dl"; then
+			clearscreen; tput bold; 
+			read -p "Enter URL: " URL; cd $MUSIC_DIR; tput sgr0
+			youtube-dl --extract-audio --audio-format mp3 --output "%(title)s.%(ext)s" $URL && NUM_SONGS=$(num_songs) #update number of songs
+			tput bold; echo "Success! Check your $MUSIC_DIR folder for the file."; tput sgr0; read -t 2 #keep output on screen for a moment
+			play_song "PRINT_ASCII"
+			give_options "$INT_DURATION" "1" #simply show menu again as if nothing happened
+		else
+			echo "You don't have youtube-dl installed. Install using your desired package manager then try again."
+			clearscreen
+			play_song "PRINT_ASCII"
+			give_options "$INT_DURATION" "1" #simply show menu again as if nothing happened
+		fi
+
+	#Invalid input; show options again and do nothing
 	else
-		give_options
+		give_options "$INT_DURATION" "1"
 	fi
+# =========== /OPTIONS ===========
 }
 
 #The script will start executing here
 
-# ======= Set MUSIC_DIR to proper path to audio files =======
-MUSIC_DIR=~/Downloads #default directory
+# ============ SETUP ============ #
+trap ctrl_c INT #if the user enters ctrl -c, allow me to do cleanup first
+
+MUSIC_DIR=~/Downloads #default directory of audio files
 
 #If the number of args > 1, exit
 if [ "$#" -gt 1 ]; then
@@ -74,19 +186,16 @@ if [ "$#" -gt 1 ]; then
 
 #If the number of args = 1, that arg must be the path
 elif [ "$#" -eq 1 ]; then
-	#Check if specified arg is a proper path
-	if [[ -d "$1" ]]; then
-		MUSIC_DIR="$1"
-	#Specified arg is not a valid path, exit.
-	else
-		tput bold
-		echo "$1 is not a valid path to a directory, try again."
-		tput sgr0
-		exit 1
-	fi
+	#Set MUSIC_DIR to user-specified path to audio files
+	#Allow cd to throw an error if this is an improper path, no big deal
+	MUSIC_DIR="$1"
 fi
 
-#Get the number of songs in the specified directory
+#Create array of all .mp3 files in MUSIC_DIR
+cd "$MUSIC_DIR"
+MUSIC_LIST=( *.mp3 *.wav *.m4a *.aif *.flac ) #Array of all music files
+
+#Get the number of songs in the specified directory, make sure it isn't 0
 NUM_SONGS=$(num_songs)
 if [ $NUM_SONGS -eq 0 ]; then
 	tput bold
@@ -95,12 +204,17 @@ if [ $NUM_SONGS -eq 0 ]; then
 	exit 1
 fi
 
-clear
-# ======= MAIN EXECUTION LOOP =======
-while :
-do
-	play_song
-	give_options
-done
+#Value is changed by give_options when user specifies an index
+#Value is reset to SHUFFLE by play_song whenever a new song is played
+REQUESTED_INDEX="SHUFFLE" #Begin by shuffling music
 
-echo "We should never get here."
+# ============ MAIN EXECUTION LOOP ============ #
+clearscreen
+while :;
+do	
+	play_song "$REQUESTED_INDEX"
+
+	#Show options for INT_DURATION seconds (entirety of song)
+	INT_DURATION=$(float_to_int "$FLOAT_DURATION")
+	give_options "$INT_DURATION"
+done
