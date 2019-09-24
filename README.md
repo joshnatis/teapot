@@ -33,7 +33,7 @@ Now go drink your tea, it's that simple.
 ## Compatability notes
 **teapot** has been tested on multiple computers and shells. Noteably, it works in the Bourne shell (sh), which means it should probably work on whatever you're using. If you find any bugs or have any issues, please reach out to me at:
 
-josh at josh8 dot com
+`josh at josh8 dot com`
 
 ## Dependencies (and lack thereof)
 It was my goal to have **teapot** be free of any dependencies. If you needed ten external libraries installed just to use my program, you'd might as well go ahead and download a full fledged application (maybe even with an ooey gooey GUI... fooey). I succeeded in the MacOS version, but on Linux I had to lean on `ffmpeg` for a tiny bit of help.
