@@ -23,7 +23,7 @@ Lastly, open the script in your favorite editor and change the variable `MUSIC_D
 You're done!
 
 ## How to use teapot
-Option 1: shuffle songs from your default directory (stored in MUSIC_DIR)
+Option 1: shuffle songs from your default directory (stored in `MUSIC_DIR`)
 <pre> teapot </pre>
 Option 2: shuffle songs from a specified directory
 <pre> teapot /path/to/directory </pre>
