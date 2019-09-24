@@ -1,15 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
 #==== FIXES ====
-#TODO - port to linux (afinfo)
 #TODO - if possible, pause
 #TODO - make ./config, replace $MUSIC_DIR with user's default for good
 	#or do it with curl somehow
 #TODO - fix bug with delete not working when asking for index
-#TODO - fix l coming up in index
 #TODO - fix download press any key to quit
 #TODO - find strange bug with n not working sometimes
 #TODO - catch ctrl z
+#TODO - fix mpg123 weird song start crackle
 
 
 #==== FEATURES ====
@@ -26,8 +25,8 @@
 	#(2) somehow find tempo of song and display animation correspondingly (using $SECONDS)
 	#(3) random animation
 	# eesh, no bloat pls
-#TODO - show metadata option (afinfo)
-
+#TODO - show metadata option (afinfo, mpg123, ffprobe)
+#TODO - integrate all options from mpg123 into linux version
 
 
 # ========== GLOBAL VARIABLES ==========
