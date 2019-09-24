@@ -1,5 +1,5 @@
 # teapot
-![Logo](images/teapot-logo-small.png) ![Screenshot](images/teapot-screenshot.png)
+![Logo](images/teapot-logo-small.png) ![Screenshot](images/teapot-screenshot2.png)
 
 ## A word of caution
 The tea isn't finished brewing yet! I'm still in the middle of ~~porting this to Linux~~, adding features, learning about licenses, and creating a ./config script. This is very much a work in progress. Otherwise, enjoy :)
