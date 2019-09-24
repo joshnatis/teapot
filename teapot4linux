@@ -1,0 +1,313 @@
+#!/bin/bash
+
+#==== FIXES ====
+#TODO - if possible, pause
+#TODO - make ./config, replace $MUSIC_DIR with user's default for good
+	#or do it with curl somehow
+#TODO - fix bug with delete not working when asking for index
+#TODO - fix download press any key to quit
+#TODO - find strange bug with n not working sometimes
+#TODO - catch ctrl z
+
+
+#==== FEATURES ====
+#TODO - add (r)ename option (enter new name: mv $MUSIC_DIR/MUSIC_LIST(SONG_INDEX $MUSIC_DIR/new name)
+#TODO - loop feature (dont update SONGINDEX)
+	#display unloop_options (unloop, quit)
+#TODO - get_duration function (possibly show duration on main screen, update it in loop - SECONDS)
+#TODO - consider putting caffeinate in setup 
+#TODO - add h for help/or tutorial
+#TODO - Use recursive search and find all music files on computer -> music_list
+	# Should be an option not default behavior, probably intensive
+#TODO - add minigames to mp3 player
+	#(1) "rate songs", at the end it displays your favorite song and the ratings you gave
+	#(2) somehow find tempo of song and display animation correspondingly (using $SECONDS)
+	#(3) random animation
+	# eesh, no bloat pls
+#TODO - show metadata option (afinfo)
+
+
+
+# ========== GLOBAL VARIABLES ==========
+#MUSIC_DIR - Directory with music files (either default or specified with $1)
+#NUM_SONGS - number of songs in $MUSIC_DIR
+#MUSIC_LIST - array of songs in $MUSIC_DIR
+#REQUESTED_INDEX - either SHUFFLE or number between 0 - NUM_SONGS, used as parameter for play_song (processed into SONG_INDEX)
+#SONG_INDEX - random or specified number between 0 - NUM_SONGS, used as index to access song file from MUSIC_LIST
+#EXTENSIONS - file extensions *.mp3, *.wav, etc (feel free to modify, preserving current format)
+# ========== /GLOBAL VARIABLES ==========
+
+
+# ========== HELPER FUNCTIONS ==========
+function clearscreen() {
+	clear && printf '\e[3J'
+}
+
+function ctrl_c() {
+	unbold
+	stop_song
+	clearscreen 
+	exit 0
+}
+
+function pkg_installed() {
+	man "$1" &> /dev/null
+	local status=$? #if the man page exists status will be 0, else 1
+	return $status
+}
+
+function is_not_digit() {
+	first_char="${1:0:1}"
+	re='^[0-9]+$'
+	if ! [[ "$1" =~ $re ]] || [ "$first_char" -eq 0 ]; then # $1 is not a digit, return error code 0 (sucess)
+   		return 0
+   	else
+   		return 1 # $1 is a digit, return error code 1 (failure)
+	fi
+}
+
+#Ceiling + 1 using bc
+function float_to_int() {
+	var=`echo "$1/1 + 2" | bc`
+	echo $var
+}
+
+function bold() {
+	tput bold
+}
+
+function unbold() {
+	tput sgr0
+}
+
+function stop_song() {
+	killall mpg123 &> /dev/null
+	clearscreen
+}
+
+#Finds number of songs in directory (MUSIC_DIR)
+function num_songs() {
+	echo $(ls -l "$MUSIC_DIR"/$EXTENSIONS 2> /dev/null | wc -l)
+    	#Note: the command "2> /dev/null" redirects error messages, but leaves regular output
+}
+
+function is_invalid() {
+	if is_not_digit "$1" || [ "$1" -gt $NUM_SONGS ] || [ "$1" -lt 0 ]; then
+		return 0
+	fi		
+	return 1
+}
+# ========== /HELPER FUNCTIONS ==========
+
+# ========== MAIN FUNCTIONS ==========
+function setup() {
+	trap ctrl_c INT #if the user enters ctrl -c, allow me to do cleanup first
+
+	#If the number of args > 1, exit
+	if [ "$#" -gt 1 ]; then
+		bold; echo "Check your arguments! Only provide an [optional] path to your music directory."; unbold
+		exit 1 
+	#If the number of args = 1, that arg must be a path to your music files
+	elif [ "$#" -eq 1 ]; then
+		#Set MUSIC_DIR to user-specified path to audio files
+		#Allow cd to throw an error if this is an improper path, no big deal
+		MUSIC_DIR="$1"
+	fi
+
+	#Create array of all .mp3 files in MUSIC_DIR
+	cd "$MUSIC_DIR"
+	MUSIC_LIST=( $EXTENSIONS ) #Array of all music files
+
+	#Get the number of songs in the specified directory, make sure it isn't 0
+	NUM_SONGS=$(num_songs)
+	if [ $NUM_SONGS -eq 0 ]; then
+		bold; echo "Found no songs in specified directory!"; unbold
+		exit 1
+	fi
+
+	clearscreen
+}
+
+#List files/indexes for user and allow them to scroll through in less
+function show_songs() {
+	#NF - Last field (File name), NR - Row number, less -S turns off word fold
+	bold; find "$MUSIC_DIR"/$EXTENSIONS 2> /dev/null | awk -F'/' '{print "["NR-1"]\t" $NF}' | less -S; unbold
+}
+
+#Download song, update number of songs, update array of songs
+function download_song() {
+	if pkg_installed "youtube-dl"; then
+		clearscreen
+		bold; read -p "Enter URL: " URL && cd $MUSIC_DIR; echo; unbold
+		youtube-dl --extract-audio --audio-format mp3 --output "%(title)s.%(ext)s" "$URL" && NUM_SONGS=$(num_songs) && MUSIC_LIST=( $EXTENSIONS )
+	
+		local status=$?
+		if [ $status = 0 ]; then
+			bold; echo "Success! Check your $MUSIC_DIR folder for the file."; unbold; read -t 3
+		else
+			echo; bold; read -p "Press any key to continue."; unbold
+		fi
+
+	else
+		bold; echo "You don't have youtube-dl installed. Install using your desired package manager then try again."; unbold; read -t 5
+	fi
+}
+
+function show_pick_song_options() {
+	print_ascii_art
+	bold; echo "(q)uit, (l)ibrary"; unbold
+	bold; printf "|"; unbold; printf "| Play Song #: "
+}
+
+#Sets global var REQUESTED_INDEX to user specified song index
+function pick_song() {
+	local index #used to store potential index for next song
+	stty sane #fixes strange bug with delete key not being picked up
+	show_pick_song_options
+
+	while :; do
+		#read -n 1 makes keys get read right away
+		local char
+		read -r -n 1 char
+
+		#quit
+	    	if [[ "$char" = "q" ]]; then
+	       		show_music_player && return
+	       	#show songs
+	       	elif [[ "$char" = "l" ]]; then
+			show_songs
+			index=""
+			show_pick_song_options
+		#elif [[ "$char" = "^?" ]]; then
+			#echo "delete pressed"
+		#User pressed enter, assess their index
+		elif [[ "$char" = "" ]]; then
+			if is_invalid "$index"; then
+				bold; echo "Index is invalid."; unbold;
+				index="" #reset index
+				read -t 1
+				show_pick_song_options
+				continue #try again
+			#Index is valid
+			else
+				REQUESTED_INDEX="$index"
+				return
+			fi
+		#User is still typing the index
+	   	else
+	   		index="$index$char" # append input
+	   	fi
+	done
+}
+
+function show_music_player() {
+	print_ascii_art
+	show_options "$INT_DURATION" "1"
+}
+
+function print_ascii_art() {
+	clearscreen
+	#formatting (optimized for 80 by 24 terminal window)
+	tput rmam #disables line wrap
+	echo " _______________________________"
+	echo "| \___===____________________()_\ "
+	echo "| |                              |"
+	echo "| |   _________________________  |"
+	echo "| |  |                        |  |"
+	echo "| |  |                        |  |"
+	echo "| |   ${MUSIC_LIST[$SONG_INDEX]}  "
+	echo "| |  |                        |  |"
+	echo "| |  |________________________|  |"
+	echo "| |                              |"
+	echo "| |                              |"
+	echo "| |              @@@@            |"
+	echo "| |           @@@ ❤︎❤︎ @@@         |"
+	echo "| |          @@@@@@@@@@@@        |"
+	echo "| |         @<<@@@()@@@>>@       |"
+	echo "| |          @@@@@@@@@@@@        |"
+	echo "| |           @@@ ||>@@@         |"
+	echo "| |              @@@@            |"
+	echo "| |                              |"
+	echo " \|______________________________|"
+	tput smam #re-enables line wrap
+}
+
+#Prints formatting, plays random song, defines a global variable with duration of current song
+function play_song() {
+	if [ "$1" = "SHUFFLE" ]; then
+		SONG_INDEX=$(($RANDOM % $NUM_SONGS)) #Get random index in range of NUM_SONGS
+	else
+		SONG_INDEX="$1"
+		REQUESTED_INDEX="SHUFFLE" #resets for next time
+	fi
+
+	print_ascii_art
+
+	#Duration of current song in seconds (global variable)
+	FLOAT_DURATION=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$MUSIC_DIR"/"${MUSIC_LIST[$SONG_INDEX]}")
+
+	#Play song file (process runs in the background)
+	mpg123 -q --no-gapless -D 0.5 --no-seekbuffer "$MUSIC_DIR"/"${MUSIC_LIST[$SONG_INDEX]}" &
+}
+
+#Prints options, times out after song ends so another one can play
+function show_options() {
+	#If no option is provided before the song stops playing, then go to the next song
+	#"TIMEOUT" is a default value; if $OPTION still equals "TIMEOUT" after read, we know the user didn't input anything
+	local option="TIMEOUT"
+
+	echo "(n)ext, (q)uit, (l)ibrary, (p)ick, (d)ownload"
+	
+	#we only want to set seconds to 0 when we start playing a new song ($2 will be "1" if song is already playing)
+	if [ "$2" == "" ]; then
+   		SECONDS=0
+   	fi
+   	
+	read -n 1 -s -t $(($INT_DURATION - $SECONDS)) option
+
+	# =========== OPTIONS ===========
+	#Next song; OR song duration has expired
+	if [ "$option" = "n" ] || [ "$option" = "TIMEOUT" ]; then
+		stop_song
+	#quit
+	elif [ "$option" = "q" ]; then
+		ctrl_c
+	#list available songs
+	elif [ "$option" = "l" ]; then
+		show_songs
+		show_music_player
+	#ask user to pick a song
+	elif [ "$option" = "p" ]; then
+		pick_song #Sets REQUESTED_INDEX to valid index
+		stop_song
+		clearscreen
+	#download song from url
+	elif [ "$option" = "d" ]; then
+		download_song
+		show_music_player
+	#Invalid input; show options again and do nothing
+	else
+		show_music_player
+	fi
+	# =========== /OPTIONS ===========
+}
+# ========== /MAIN FUNCTIONS ==========
+
+
+#The script will start executing here
+EXTENSIONS="*.mp3 *.wav *.m4a *.aif *.flac"
+MUSIC_DIR=~/Downloads #default directory of audio files
+setup "$@" #pass arguments to script into function
+
+#Value is changed by show_options when user specifies an index
+#Value is reset to SHUFFLE by play_song whenever a new song is played
+REQUESTED_INDEX="SHUFFLE" #Begin by shuffling music
+
+# ============ MAIN EXECUTION LOOP ============ #
+while :;
+do	
+	play_song "$REQUESTED_INDEX"
+	INT_DURATION=$(float_to_int "$FLOAT_DURATION")
+	#Show options for INT_DURATION seconds (entirety of song)
+	show_options "$INT_DURATION"
+done
