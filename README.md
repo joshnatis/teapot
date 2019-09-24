@@ -36,6 +36,6 @@ Now go drink your tea, it's that simple.
 josh at josh8 dot com
 
 ## Dependencies (and lack thereof)
-It was my goal to have **teapot** be free of any dependencies. If you needed ten external libraries installed just to use my program, you'd might as well go ahead and download a full fledged application (maybe even with an ooey gooey gui... fooey). I was able to succeed in the MacOS version, but on Linux I had to lean on `ffmpeg` for a tiny bit of help.
+It was my goal to have **teapot** be free of any dependencies. If you needed ten external libraries installed just to use my program, you'd might as well go ahead and download a full fledged application (maybe even with an ooey gooey GUI... fooey). I succeeded in the MacOS version, but on Linux I had to lean on `ffmpeg` for a tiny bit of help.
 
 On MacOS, **teapot** uses the `afplay`and `afinfo` commands to deal with audio -- these are native to the OS and come installed by default. On Ganoo Linocks (read: any Linux distribution), **teapot** uses `mpg123` and `ffmpeg` for the same purposes. I'm unsure as to whether `mpg123` comes packaged on all/most distros, and unfortunately I don't think there's a way to bypass using `ffmpeg` without significantly rewriting the program's code. But, to be fair, if you're a Linux user you probably have `ffmpeg` installed already. 
