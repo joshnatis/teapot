@@ -31,7 +31,7 @@ Now go drink your tea, it's that simple.
 
 
 ## Compatability notes
-**teapot** has been tested on multiple computers and shells, and linted with [shellcheck](https://www.shellcheck.net/). Noteably, it works in the Bourne shell (sh), which means it should probably work on whatever you're using. If you find any bugs or have any issues, please reach out to me at:
+**teapot** has been tested on multiple computers and shells, and linted with [shellcheck](https://www.shellcheck.net/). Noteably, it works in the Bourne shell (`sh`) on MacOS and Manjaro Linux, though it certainly should not. When in doubt, use `bash`. If you find any bugs or have any issues, please reach out to me at:
 
 `josh at josh8 dot com`
 
