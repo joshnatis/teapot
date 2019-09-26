@@ -12,18 +12,25 @@ Also, if you want to watch me explain how the program works (for my own future r
 Really, **teapot** is a minimal text-based terminal music player -- noteably with no dependencies (at least I think so :P). I'd like to keep this thing as bloat-free as possible!
 
 ## How to set up teapot
-**Note:** I'm attempting to abstract this process by creating a script to automatically configure the program. If you're seeing this, don't worry, it will be updated soon.
-
-Firstly, make sure you choose the correct version to download. On MacOS, the default terminal audio player command is `afplay`, while on Linux it's `mpg123` -- to keep you from manually substituting one command for the other depending on your system I went ahead and made two different versions.
-
-Next, move **teapot** to the directory where you keep all of your shell scripts. If you don't have one already, I suggest you see my quick guide on setting up [here](https://github.com/joshnatis/shell-skriptz). Now, make the script executable with the command `chmod +x teapot`.
-
-Lastly, open the script in your favorite editor and change the variable `MUSIC_DIR` to have the value of the default directory where you keep your audio files. This way, you can simply type **teapot** and have your songs shuffle automatically. 
+1. `git clone https://github.com/joshnatis/teapot.git`
+1. `cd teapot`
+1. `chmod +x configurate`
+1. `./configurate`
 
 You're done!
 
+This is what the script does: 
+* checks if your operating system is compatible
+* checks if you have the prerequisites installed
+* asks you for the directory where most of your music files are contained, so that you can simply call `teapot` and have your songs shuffle automatically.
+* makes certain that there is no other executable named `teapot` installed (because one exists)
+	* if another teapot is installed, our executable is renamed to `teapot2`
+* makes the script executable
+* asks you for the location of your other shell scripts and moves `teapot` there (or allows you to move the script manually)
+* cleans up the mess by deleting the cloned folder and all of its contents
+
 ## How to use teapot
-Option 1: shuffle songs from your default directory (stored in `MUSIC_DIR`)
+Option 1: shuffle songs from your default directory
 <pre> teapot </pre>
 Option 2: shuffle songs from a specified directory
 <pre> teapot /path/to/directory </pre>
