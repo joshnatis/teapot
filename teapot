@@ -16,7 +16,6 @@
 #TODO - fix bug with delete not working when asking for index
 #TODO - fix download press any key to quit
 #TODO - find strange bug with n not working sometimes
-#TODO - catch ctrl z
 #TODO - fix mpg123 weird song start crackle
 #TODO - make sure afinfo, afplay, mpg123, ffmpeg are installed prior to opening
 
