@@ -38,12 +38,21 @@
 
 
 # ========== HELPER FUNCTIONS ==========
+
+#theme function
+function make_colorful() {
+	#tput setab 4
+	#tput setaf 7
+	:
+}
+
 function clearscreen() {
 	clear && printf '\e[3J'
 }
 
 function ctrl_c() {
-	unbold
+	#unbold
+	tput sgr0
 	stop_song
 	clearscreen 
 	exit 0
@@ -55,11 +64,23 @@ function pkg_installed() {
 	return $status
 }
 
-function is_not_digit() {
-	first_char="${1:0:1}"
-	re='^[0-9]+$'
+function is_not_base_10() {
+	local first_char="${1:0:1}"
+	local num_digits=$(printf "$1" | wc -m) #wc -m counts chars
 
-	if ! [[ "$1" =~ $re ]] || [ "$first_char" -eq 0 ]; then # $1 is not a digit, return error code 0 (sucess)
+	#if input has a prefix of 0 but continues, it is signifying a number in another base system
+	if [ "$first_char" = 0 ] && [ "$num_digits" != 1 ]; then
+		return 0 #successfully not base 10
+	else
+		return 1
+	fi
+}
+
+function is_not_digit() {
+
+	local re='^[0-9]+$'
+
+	if ! [[ "$1" =~ $re ]] || is_not_base_10; then # $1 is not a digit, return error code 0 (sucess)
    		return 0
    	fi
 
@@ -68,7 +89,7 @@ function is_not_digit() {
 
 #Ceiling + 1 using bc
 function float_to_int() {
-	var=$(echo "$1/1 + 2" | bc)
+	local var=$(echo "$1/1 + 2" | bc)
 	echo "$var"
 }
 
@@ -78,6 +99,8 @@ function bold() {
 
 function unbold() {
 	tput sgr0
+	make_colorful
+
 }
 
 function stop_song() {
@@ -137,8 +160,7 @@ function setup() {
 	#Will store all songs which have been played in current session
 	HISTORY=()
 
-
-	#tput setab 4
+	make_colorful
 	clearscreen
 }
 
@@ -158,19 +180,21 @@ function queue_previous() {
 function download_song() {
 	if pkg_installed "youtube-dl"; then
 		bold; read -r -p "Enter URL: " URL && cd "$MUSIC_DIR"; unbold
-		youtube-dl --extract-audio --audio-format mp3 --output "%(title)s.%(ext)s" "$URL" && NUM_SONGS=$(num_songs) && MUSIC_LIST=( $EXTENSIONS )
-	
+		youtube-dl --extract-audio --audio-format mp3 --output "%(title)s.%(ext)s" "$URL" 2> /dev/null && NUM_SONGS=$(num_songs) && MUSIC_LIST=( $EXTENSIONS )
+		
 		local status=$? #if song downloaded successfully, status is 0
 		if [ $status = 0 ]; then
 			bold; echo "Success! Check your $MUSIC_DIR folder for the file."; unbold; read -t 3
 			clearscreen
 		else
-			read -t 3
+			tput setaf 1; printf "ERROR"; tput sgr0; make_colorful
+			echo ": $URL is not a valid URL."
+			read -t 5
 			clearscreen
 		fi
 
 	else
-		bold; echo "You don't have youtube-dl installed. Install using your desired package manager then try again."; unbold; read -t 5
+		bold; echo "You don't have youtube-dl installed. Install using your desired package manager then try again."; unbold; read -t 4
 	fi
 }
 
