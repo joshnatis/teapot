@@ -1,24 +1,10 @@
 #!/bin/bash
 
-#to install:
-#1) releases
-#2) wget from website
-#3) wget from github
-#4) download then run make?
-#5) http://kinolien.github.io/gitzip github pages goto zip file
-#https://askubuntu.com/questions/148421/how-to-programmatically-edit-a-file-using-only-terminal
-	#sed to replace MUSIC_DIR=~/Downloads with path
-
 #==== FIXES ====
 #TODO - if possible, pause
-#TODO - make ./config, replace $MUSIC_DIR with user's default for good
-	#or do it with curl somehow
 #TODO - fix bug with delete not working when asking for index
-#TODO - fix download press any key to quit
 #TODO - find strange bug with n not working sometimes
 #TODO - fix mpg123 weird song start crackle
-#TODO - make sure afinfo, afplay, mpg123, ffmpeg are installed prior to opening
-
 
 #==== FEATURES ====
 #TODO - add (r)ename option (enter new name: mv $MUSIC_DIR/MUSIC_LIST(SONG_INDEX $MUSIC_DIR/new name)

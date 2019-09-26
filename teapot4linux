@@ -2,13 +2,9 @@
 
 #==== FIXES ====
 #TODO - if possible, pause
-#TODO - make ./config, replace $MUSIC_DIR with user's default for good
-	#or do it with curl somehow
 #TODO - fix bug with delete not working when asking for index
-#TODO - fix download press any key to quit
 #TODO - find strange bug with n not working sometimes
-#TODO - catch ctrl z
-
+#TODO - fix mpg123 weird song start crackle
 
 #==== FEATURES ====
 #TODO - add (r)ename option (enter new name: mv $MUSIC_DIR/MUSIC_LIST(SONG_INDEX $MUSIC_DIR/new name)
@@ -25,7 +21,8 @@
 	#(3) random animation
 	# eesh, no bloat pls
 #TODO - show metadata option (afinfo)
-
+#TODO - integrate all options from mpg123 into linux version
+#TODO - arrowkeys for next/back
 
 
 # ========== GLOBAL VARIABLES ==========
