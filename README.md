@@ -13,7 +13,7 @@ Really, **teapot** is a minimal text-based terminal music player -- noteably wit
 
 ## How to set up teapot
 1. `git clone https://github.com/joshnatis/teapot.git`
-1. `cd teapot`
+1. `cd teapot/`
 1. `chmod +x configurate`
 1. `./configurate`
 
