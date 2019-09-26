@@ -151,6 +151,8 @@ function setup() {
 	#Will store all songs which have been played in current session
 	HISTORY=()
 
+
+	#tput setab 4
 	clearscreen
 }
 
@@ -246,7 +248,7 @@ function print_ascii_art() {
 	echo "| |   _________________________  |"
 	echo "| |  |                        |  |"
 	echo "| |  |                        |  |"
-	echo "| |   ${MUSIC_LIST[$SONG_INDEX]}  "
+	echo "| |  |${MUSIC_LIST[$SONG_INDEX]}  "
 	echo "| |  |                        |  |"
 	echo "| |  |________________________|  |"
 	echo "| |                              |"
