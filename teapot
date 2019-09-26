@@ -217,7 +217,7 @@ function pick_song() {
 
 		#quit
 		if [[ "$char" = "q" ]]; then
-	       	show_music_player && return
+			show_music_player && return
 		#show songs
 		elif [[ "$char" = "l" ]]; then
 			show_songs
