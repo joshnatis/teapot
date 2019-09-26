@@ -36,12 +36,21 @@
 
 
 # ========== HELPER FUNCTIONS ==========
+
+#theme function
+function make_colorful() {
+	#tput setab 4
+	#tput setaf 7
+	:
+}
+
 function clearscreen() {
 	clear && printf '\e[3J'
 }
 
 function ctrl_c() {
-	unbold
+	#unbold
+	tput sgr0
 	stop_song
 	clearscreen 
 	exit 0
@@ -53,20 +62,33 @@ function pkg_installed() {
 	return $status
 }
 
-function is_not_digit() {
-	first_char="${1:0:1}"
-	re='^[0-9]+$'
-	if ! [[ "$1" =~ $re ]] || [ "$first_char" -eq 0 ]; then # $1 is not a digit, return error code 0 (sucess)
-   		return 0
-   	else
-   		return 1 # $1 is a digit, return error code 1 (failure)
+function is_not_base_10() {
+	local first_char="${1:0:1}"
+	local num_digits=$(printf "$1" | wc -m) #wc -m counts chars
+
+	#if input has a prefix of 0 but continues, it is signifying a number in another base system
+	if [ "$first_char" = 0 ] && [ "$num_digits" != 1 ]; then
+		return 0 #successfully not base 10
+	else
+		return 1
 	fi
+}
+
+function is_not_digit() {
+
+	local re='^[0-9]+$'
+
+	if ! [[ "$1" =~ $re ]] || is_not_base_10; then # $1 is not a digit, return error code 0 (sucess)
+   		return 0
+   	fi
+
+   	return 1 # $1 is a digit, return error code 1 (failure)
 }
 
 #Ceiling + 1 using bc
 function float_to_int() {
-	var=`echo "$1/1 + 2" | bc`
-	echo $var
+	local var=$(echo "$1/1 + 2" | bc)
+	echo "$var"
 }
 
 function bold() {
@@ -75,6 +97,7 @@ function bold() {
 
 function unbold() {
 	tput sgr0
+	make_colorful
 }
 
 function stop_song() {
@@ -84,14 +107,22 @@ function stop_song() {
 
 #Finds number of songs in directory (MUSIC_DIR)
 function num_songs() {
-	echo $(ls -l "$MUSIC_DIR"/$EXTENSIONS 2> /dev/null | wc -l)
-    	#Note: the command "2> /dev/null" redirects error messages, but leaves regular output
+	ls -l "$MUSIC_DIR"/$EXTENSIONS 2> /dev/null | wc -l
+	#Note: the command "2> /dev/null" redirects error messages, but leaves regular output
 }
 
-function is_invalid() {
-	if is_not_digit "$1" || [ "$1" -gt $NUM_SONGS ] || [ "$1" -lt 0 ]; then
+function is_invalid_index() {
+	if is_not_digit "$1" || [ "$1" -gt "$NUM_SONGS" ] || [ "$1" -lt 0 ]; then
 		return 0
 	fi		
+	return 1
+}
+
+function not_replay() {
+	#if this is the first song, or if the current song is already recorded in history
+	if [ "${#HISTORY[@]}" -eq 0 ] || [ "$SONG_INDEX" != "${HISTORY[${#HISTORY[@]}-1]}" ]; then
+		return 0
+	fi
 	return 1
 }
 # ========== /HELPER FUNCTIONS ==========
@@ -107,21 +138,26 @@ function setup() {
 	#If the number of args = 1, that arg must be a path to your music files
 	elif [ "$#" -eq 1 ]; then
 		#Set MUSIC_DIR to user-specified path to audio files
-		#Allow cd to throw an error if this is an improper path, no big deal
 		MUSIC_DIR="$1"
 	fi
 
-	#Create array of all .mp3 files in MUSIC_DIR
-	cd "$MUSIC_DIR"
-	MUSIC_LIST=( $EXTENSIONS ) #Array of all music files
+	#cd throws error and exits if improper path
+	cd "$MUSIC_DIR" || exit
 
 	#Get the number of songs in the specified directory, make sure it isn't 0
 	NUM_SONGS=$(num_songs)
-	if [ $NUM_SONGS -eq 0 ]; then
+	if [ "$NUM_SONGS" -eq 0 ]; then
 		bold; echo "Found no songs in specified directory!"; unbold
 		exit 1
 	fi
 
+	#Create array of all audio files in MUSIC_DIR
+	MUSIC_LIST=( $EXTENSIONS )
+	
+	#Will store all songs which have been played in current session
+	HISTORY=()
+
+	make_colorful
 	clearscreen
 }
 
@@ -131,22 +167,32 @@ function show_songs() {
 	bold; find "$MUSIC_DIR"/$EXTENSIONS 2> /dev/null | awk -F'/' '{print "["NR-1"]\t" $NF}' | less -S; unbold
 }
 
+
+#Set REQUESTED_INDEX to the previous song played
+function queue_previous() {
+	#pop last element of the history array
+	REQUESTED_INDEX="${HISTORY[${#HISTORY[@]}-1]}"
+}
+
 #Download song, update number of songs, update array of songs
 function download_song() {
 	if pkg_installed "youtube-dl"; then
-		clearscreen
-		bold; read -p "Enter URL: " URL && cd $MUSIC_DIR; echo; unbold
-		youtube-dl --extract-audio --audio-format mp3 --output "%(title)s.%(ext)s" "$URL" && NUM_SONGS=$(num_songs) && MUSIC_LIST=( $EXTENSIONS )
-	
-		local status=$?
+		bold; read -r -p "Enter URL: " URL && cd "$MUSIC_DIR"; unbold
+		youtube-dl --extract-audio --audio-format mp3 --output "%(title)s.%(ext)s" "$URL" 2> /dev/null && NUM_SONGS=$(num_songs) && MUSIC_LIST=( $EXTENSIONS )
+		
+		local status=$? #if song downloaded successfully, status is 0
 		if [ $status = 0 ]; then
 			bold; echo "Success! Check your $MUSIC_DIR folder for the file."; unbold; read -t 3
+			clearscreen
 		else
-			echo; bold; read -p "Press any key to continue."; unbold
+			tput setaf 1; printf "ERROR"; tput sgr0; make_colorful
+			echo ": $URL is not a valid URL."
+			read -t 5
+			clearscreen
 		fi
 
 	else
-		bold; echo "You don't have youtube-dl installed. Install using your desired package manager then try again."; unbold; read -t 5
+		bold; echo "You don't have youtube-dl installed. Install using your desired package manager then try again."; unbold; read -t 4
 	fi
 }
 
@@ -156,7 +202,7 @@ function show_pick_song_options() {
 	bold; printf "|"; unbold; printf "| Play Song #: "
 }
 
-#Sets global var REQUESTED_INDEX to user specified song index
+#Sets REQUESTED_INDEX to user specified song index
 function pick_song() {
 	local index #used to store potential index for next song
 	stty sane #fixes strange bug with delete key not being picked up
@@ -168,24 +214,22 @@ function pick_song() {
 		read -r -n 1 char
 
 		#quit
-	    	if [[ "$char" = "q" ]]; then
-	       		show_music_player && return
-	       	#show songs
-	       	elif [[ "$char" = "l" ]]; then
+		if [[ "$char" = "q" ]]; then
+	       	show_music_player && return
+		#show songs
+		elif [[ "$char" = "l" ]]; then
 			show_songs
 			index=""
 			show_pick_song_options
-		#elif [[ "$char" = "^?" ]]; then
-			#echo "delete pressed"
 		#User pressed enter, assess their index
 		elif [[ "$char" = "" ]]; then
-			if is_invalid "$index"; then
+			if is_invalid_index "$index"; then
 				bold; echo "Index is invalid."; unbold;
 				index="" #reset index
 				read -t 1
 				show_pick_song_options
 				continue #try again
-			#Index is valid
+			#Index is valid, submit it
 			else
 				REQUESTED_INDEX="$index"
 				return
@@ -245,30 +289,32 @@ function play_song() {
 
 	#Play song file (process runs in the background)
 	mpg123 -q --no-gapless -D 0.5 --no-seekbuffer "$MUSIC_DIR"/"${MUSIC_LIST[$SONG_INDEX]}" &
+
+	#if not replaying last song, add currently playing song to history (at the end of the array)
+	if not_replay; then
+		HISTORY=( "${HISTORY[@]}" "$SONG_INDEX" )
+	fi
 }
 
 #Prints options, times out after song ends so another one can play
 function show_options() {
 	#If no option is provided before the song stops playing, then go to the next song
-	#"TIMEOUT" is a default value; if $OPTION still equals "TIMEOUT" after read, we know the user didn't input anything
+	#"TIMEOUT" is a default value; if $option still equals "TIMEOUT" after read, we know the user didn't input anything
 	local option="TIMEOUT"
 
-	echo "(n)ext, (q)uit, (l)ibrary, (p)ick, (d)ownload"
+	echo "(n)ext, (b)ack, (p)ick, (l)ibrary, (q)uit, (d)ownload"
 	
 	#we only want to set seconds to 0 when we start playing a new song ($2 will be "1" if song is already playing)
 	if [ "$2" == "" ]; then
    		SECONDS=0
    	fi
-   	
+
 	read -n 1 -s -t $(($INT_DURATION - $SECONDS)) option
 
 	# =========== OPTIONS ===========
 	#Next song; OR song duration has expired
 	if [ "$option" = "n" ] || [ "$option" = "TIMEOUT" ]; then
 		stop_song
-	#quit
-	elif [ "$option" = "q" ]; then
-		ctrl_c
 	#list available songs
 	elif [ "$option" = "l" ]; then
 		show_songs
@@ -278,6 +324,23 @@ function show_options() {
 		pick_song #Sets REQUESTED_INDEX to valid index
 		stop_song
 		clearscreen
+	#play previous song
+	elif [ "$option" = "b" ]; then
+		#Remove current song from history (unless there's only 1 song in history)
+		if [ "${#HISTORY[@]}" -gt  1 ]; then
+			unset 'HISTORY[${#HISTORY[@]}-1]'
+		fi
+		queue_previous
+		stop_song
+	#FOR DEBUGGING - show history
+	elif [ "$option" = "h" ]; then
+		echo "Length: ${#HISTORY[@]}"
+		printf '%s ' "${HISTORY[@]}"
+		read -t 5
+		show_music_player
+	#quit
+	elif [ "$option" = "q" ]; then
+		ctrl_c
 	#download song from url
 	elif [ "$option" = "d" ]; then
 		download_song
@@ -292,11 +355,11 @@ function show_options() {
 
 
 #The script will start executing here
-EXTENSIONS="*.mp3 *.wav *.m4a *.aif *.flac"
+EXTENSIONS="*.mp3 *.pcm *.wav *.aac *.ogg *.m4a *.aif *.flac"
 MUSIC_DIR=~/Downloads #default directory of audio files
 setup "$@" #pass arguments to script into function
 
-#Value is changed by show_options when user specifies an index
+#Value is changed by show_options, pick_song, or queue_previous
 #Value is reset to SHUFFLE by play_song whenever a new song is played
 REQUESTED_INDEX="SHUFFLE" #Begin by shuffling music
 
