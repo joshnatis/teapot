@@ -18,6 +18,8 @@ function check_requirements() {
 			:
 		else
 			echo "Uh oh, you don't have afplay and afinfo installed. Go get 'em, tiger!"
+			print_bottom_border
+			exit 1
 		fi
 
 	elif [[ "$OSTYPE" == "linux-gnu" ]]; then
@@ -25,11 +27,10 @@ function check_requirements() {
 			:
 		else
 			echo "Uh oh, you don't have mpg123 or ffmpeg installed. Go get 'em, tiger!"
+			print_bottom_border
+			exit 1
 		fi
 	fi
-
-	print_bottom_border
-	exit1
 }
 
 function ctrl_c() {
@@ -205,7 +206,7 @@ if [ "$DIR" != *"/teapot" ]; then
 	read -r -p "| * continue?"
 fi
 
-rm -r "$DIR" #MAYBE make -rf
+rm -rf "$DIR" #MAYBE make -rf
 
 echo "| ... and, you're done! Simply type $PLAYERNAME and enjoy your music."
 
