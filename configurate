@@ -186,7 +186,7 @@ if [ "$path" != "manual" ]; then
 	#expand ~ into $HOME so it would work
 	path="${path/#\~/$HOME}"
 	#move the script into folder with other executables
-	mv $PLAYERNAME "$path/$PLAYERNAME"
+	mv $PLAYERNAME "$path"
 else
 	#since we're deleting this whole folder, move the script out so the user can manually relocate it later
 	parent_dir="$(dirname "$DIR")"
