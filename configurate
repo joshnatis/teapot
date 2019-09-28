@@ -7,8 +7,7 @@
 function check_os() {
 	if [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "msys" ]] ||[[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "freebsd"* ]]; then
 		echo "teapot doesn't support $OSTYPE. If you're on BSD, you can try your luck."
-		print_bottom_border
-		exit 1
+		ctrl_c
 	fi
 }
 
@@ -18,8 +17,7 @@ function check_requirements() {
 			:
 		else
 			echo "Uh oh, you don't have afplay and afinfo installed. Go get 'em, tiger!"
-			print_bottom_border
-			exit 1
+			ctrl_c
 		fi
 
 	elif [[ "$OSTYPE" == "linux-gnu" ]]; then
@@ -27,16 +25,16 @@ function check_requirements() {
 			:
 		else
 			echo "Uh oh, you don't have mpg123 or ffmpeg installed. Go get 'em, tiger!"
-			print_bottom_border
-			exit 1
+			ctrl_c
 		fi
 	fi
 }
 
 function ctrl_c() {
+	print_bottom_border
 	tput sgr0
 	clear
-	exit 0
+	exit 1
 }
 
 #set blue theme
@@ -111,6 +109,8 @@ print_top_border
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 echo "| Welcome!"
+echo "$DIR"
+read
 
 #make sure operating system is compatible
 check_os
@@ -193,21 +193,19 @@ else
 	#since we're deleting this whole folder, move the script out so the user can manually relocate it later
 	location="$(dirname "$DIR")"
 	echo "| Understood! The executable will be in $location"
-	mv "$PLAYERNAME" "$location/$PLAYERNAME"
 fi
 
 echo "|"
 cd "$DIR" || exit
 
 
-if [ "$DIR" != *"/teapot" ]; then
-	echo "| Caution, all the files in $DIR are about to be deleted"
-	echo "| If you're not in the teapot downloaded directory, enter ctrl_c"
-	read -r -p "| * continue?"
-fi
+echo "| Caution, all the files in $DIR are about to be deleted"
+echo "| If you're not in the teapot downloaded directory, enter ctrl_c"
+read -r -p "| * continue?"
 
-rm -rf "$DIR" #MAYBE make -rf
-cd ..
+
+echo "mv $DIR / $PLAYERNAME $."
+mv "$DIR"/"$PLAYERNAME" "$location" && rm -rf "$DIR"
 
 echo "| ... and, you're done! Simply type $PLAYERNAME and enjoy your music."
 
