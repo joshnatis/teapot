@@ -179,7 +179,7 @@ read -r -p "| * Enter path: " path
 if [ "$path" != "manual" ]; then
 	status=$(validate_directory "$path")
 	while [ $status -eq 1 ]; do
-		read -r -p "| Invalid. Enter path: " MUSIC_DIR
+		read -r -p "| Invalid. Enter path: " path
 		status=$(validate_directory "$path")
 	done
 
