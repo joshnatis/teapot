@@ -109,8 +109,6 @@ print_top_border
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 echo "| Welcome!"
-echo "$DIR"
-read
 
 #make sure operating system is compatible
 check_os
@@ -191,8 +189,8 @@ if [ "$path" != "manual" ]; then
 	mv $PLAYERNAME "$path/$PLAYERNAME"
 else
 	#since we're deleting this whole folder, move the script out so the user can manually relocate it later
-	location="$(dirname "$DIR")"
-	echo "| Understood! The executable will be in $location"
+	parent_dir="$(dirname "$DIR")"
+	echo "| Understood! The executable will be in $parent_dir"
 fi
 
 echo "|"
@@ -204,8 +202,8 @@ echo "| If you're not in the teapot downloaded directory, enter ctrl_c"
 read -r -p "| * continue?"
 
 
-echo "mv $DIR / $PLAYERNAME $."
-mv "$DIR"/"$PLAYERNAME" "$location" && rm -rf "$DIR"
+#echo "mv $DIR / $PLAYERNAME $."
+mv "$DIR"/"$PLAYERNAME" /tmp && rm -rf "$DIR" && mv /tmp/"$PLAYERNAME" "$parent_dir"
 
 echo "| ... and, you're done! Simply type $PLAYERNAME and enjoy your music."
 
