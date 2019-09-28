@@ -207,6 +207,7 @@ if [ "$DIR" != *"/teapot" ]; then
 fi
 
 rm -rf "$DIR" #MAYBE make -rf
+cd ..
 
 echo "| ... and, you're done! Simply type $PLAYERNAME and enjoy your music."
 
