@@ -138,7 +138,7 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
 	cd "$DIR" || exit
 	rm teapot
 	echo "| Since you're on Linux, we'll brew you the penguin tea."
-	if pkg_installed "teapot" || [ $isinstalled != "" ]; then
+	if pkg_installed "teapot" || [ -n "$isinstalled" ]; then
 		echo "| You already have a program named teapot installed."
 		echo "| We'll name this one 'teapot2', then."
 		PLAYERNAME="teapot2"
@@ -154,7 +154,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 	cd "$DIR" || exit
 	rm teapot4linux
 	echo "| Since you're on MacOS, we'll brew you the apple tea."
-	if pkg_installed "teapot" || [ $isinstalled != "" ]; then
+	if pkg_installed "teapot" || [ -n "$isinstalled" ]; then
 		echo "| You already have a program named teapot installed."
 		echo "| We'll name this one 'teapot2', then."
 		PLAYERNAME="teapot2"
