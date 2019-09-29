@@ -4,7 +4,7 @@
 ## A word of caution
 The tea isn't finished brewing yet! I'm still in the middle of ~~porting this to Linux~~, adding features, learning about licenses, and ~~creating a configuration script~~. This is very much a work in progress. Otherwise, enjoy :)
 
-Also, if you want to watch me explain how the program works (for my own future reference), you can click [here](https://youtu.be/EEDab9rvor4).
+Also, if you want to watch me explain how the program works (for my own future reference), you can click [here](youtube.com/watch?v=oJpkSBohS0U).
 
 ## What is teapot?
 **teapot** is a recursive acronym, short for *teapot, enjoy a peaceful, open tune*. Legend has it that the *o* actually stands for *oraguntan*, but $CREATOR will never tell. Let's also pretend that the *o* stands for *open* in reference to Open Source, and not because I couldn't think of any other words that start with *o*.
