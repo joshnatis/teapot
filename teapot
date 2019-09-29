@@ -178,7 +178,7 @@ function queue_previous() {
 
 #Download song, update number of songs, update array of songs
 function download_song() {
-	if pkg_installed "youtube-dl"; then
+	if pkg_installed "youtube-dl" && pkg_installed "ffmpeg"; then
 		bold; read -r -p "Enter URL: " URL && cd "$MUSIC_DIR"; unbold
 		youtube-dl --extract-audio --audio-format mp3 --output "%(title)s.%(ext)s" "$URL" 2> /dev/null && NUM_SONGS=$(num_songs) && MUSIC_LIST=( $EXTENSIONS )
 		
@@ -194,7 +194,7 @@ function download_song() {
 		fi
 
 	else
-		bold; echo "You don't have youtube-dl installed. Install using your desired package manager then try again."; unbold; read -t 4
+		bold; echo "You must have youtube-dl and ffmpeg installed. Install using your desired package manager then try again."; unbold; read -t 4
 	fi
 }
 
