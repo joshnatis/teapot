@@ -9,7 +9,7 @@ Also, if you want to watch me explain how the program works (for my own future r
 ## What is teapot?
 **teapot** is a recursive acronym, short for *teapot, enjoy a peaceful, open tune*. Legend has it that the *o* actually stands for *oraguntan*, but $CREATOR will never tell. Let's also pretend that the *o* stands for *open* in reference to Open Source, and not because I couldn't think of any other words that start with *o*.
 
-Really, **teapot** is a minimal text-based terminal music player -- noteably with no dependencies (at least I think so :P). I'd like to keep this thing as bloat-free as possible!
+Really, **teapot** is a minimal text-based command-line music player -- noteably with no dependencies (well, almost). This is not bloatware.
 
 ## How to set up teapot
 1. `git clone https://github.com/joshnatis/teapot.git`
@@ -38,11 +38,11 @@ Now go drink your tea, it's that simple.
 
 
 ## Compatability notes
-**teapot** has been tested on multiple computers and shells, and linted with [shellcheck](https://www.shellcheck.net/). Noteably, it works in the Bourne shell (`sh`) on MacOS and Manjaro Linux, though it certainly should not. When in doubt, use `bash`. If you find any bugs or have any issues, please reach out to me at:
+**teapot** has been tested on multiple computers and shells, and linted with [shellcheck](https://www.shellcheck.net/). It was confirmed to work on MacOS, Manjaro Linux, and noteably Arch Linux. It should work in most shells, but when in doubt, use `bash`. If you find any bugs or have any issues, please reach out to me at:
 
 `josh at josh8 dot com`
 
 ## Dependencies (and lack thereof)
-It was my goal to have **teapot** be free of any dependencies. If you needed ten external libraries installed just to use my program, you'd might as well go ahead and download a full fledged application (maybe even with an ooey gooey GUI... fooey). I succeeded in the MacOS version, but on Linux I had to lean on `ffmpeg` for a tiny bit of help.
+It was my goal to have **teapot** be free of any dependencies. If you needed ten external libraries installed just to use my program, you'd might as well go ahead and download a full fledged application (maybe even with an ooey gooey GUI... fooey).
 
-On MacOS, **teapot** uses the `afplay`and `afinfo` commands to deal with audio -- these are native to the OS and come installed by default. On Ganoo Linocks (read: any Linux distribution), **teapot** uses `mpg123` and `ffmpeg` for the same purposes. I'm unsure as to whether `mpg123` comes packaged on all/most distros, and unfortunately I don't think there's a way to bypass using `ffmpeg` without significantly rewriting the program's code. But, to be fair, if you're a Linux user you probably have `ffmpeg` installed already. 
+On MacOS, **teapot** uses the `afplay`and `afinfo` commands to deal with audio -- these are native to the OS and come installed by default. On Ganoo Linocks (read: any Linux distribution), **teapot** uses `ffmpeg` for the same purposes. This is far from ideal, but, to be fair, if you're a Linux user you probably have `ffmpeg` installed already. The script can also work with `mpg123` (in fact there is a commented line containing the `mpg123` command that can replace `ffmpeg`), or any utility that can play audio (I would have used `aplay` but it only works for raw audio files).
