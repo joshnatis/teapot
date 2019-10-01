@@ -1,31 +1,58 @@
 #!/bin/bash
 
 #TODO REPLACE EVAL
-#TODO rm rf
 
 #make sure os is comptatible
 function check_os() {
 	if [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "msys" ]] ||[[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "freebsd"* ]]; then
 		echo "teapot doesn't support $OSTYPE. If you're on BSD, you can try your luck."
+		read -t 5
 		ctrl_c
 	fi
 }
 
+#sets PLAYMUSICWITH and PLAYERNAME
 function check_requirements() {
 	if [[ "$OSTYPE" == "darwin"* ]]; then
 		if pkg_installed "afplay" && pkg_installed "afinfo"; then
 			:
 		else
 			echo "Uh oh, you don't have afplay and afinfo installed. Go get 'em, tiger!"
+			read -t 5
 			ctrl_c
 		fi
 
 	elif [[ "$OSTYPE" == "linux-gnu" ]]; then
-		if pkg_installed "mpg123" && pkg_installed "ffmpeg"; then
-			:
+		local ffmpeg_installed=$(which ffmpeg 2> /dev/null)
+		local mpg123_installed=$(which mpg123 2> /dev/null)
+
+		if [ -n "$mpg123_installed" ]; then
+			PLAYMUSICWITH="mpg123"
+		elif [ -n "$ffmpeg_installed" ]; then
+			PLAYMUSICWITH="ffmpeg"
 		else
-			echo "Uh oh, you don't have mpg123 or ffmpeg installed. Go get 'em, tiger!"
+			echo "Uh oh, you don't have mpg123 nor ffmpeg installed. Go get 'em, tiger!"
+		fi
+	fi
+
+	local other_teapot_installed=$(which teapot 2> /dev/null)
+	if [ -n "$other_teapot_installed" ]; then
+		echo "| You already have a program named teapot installed."
+		echo "| We'll name this one 'teapot2', then."
+		PLAYERNAME="teapot2"
+	else
+		PLAYERNAME="teapot"
+	fi
+
+	local bc_installed=$(which bc 2> /dev/null)
+	local awk_installed=$(which awk 2> /dev/null)
+	if [ -z "$bc_installed" ]; then
+		if [ -z "$awk_installed" ]; then
+			echo "| You have neither bc nor awk installed. Go install one!"
+			read -t 5
 			ctrl_c
+		else
+			replace_bc_with_awk
 		fi
 	fi
 }
@@ -89,6 +116,22 @@ function replace_default_directory() {
 	fi
 }
 
+#use awk function instead of bc
+function replace_bc_with_awk() {
+	local original='INT_DURATION=$(float_to_int "$FLOAT_DURATION")'
+	local new='INT_DURATION=$(float_to_int2 "$FLOAT_DURATION")'
+
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+		local file="teapot"
+		sed -i "" 's',"$original","$new",'g' "$file"
+
+	elif [[ "$OSTYPE" == "linux-gnu" ]]; then
+		local file="teapot4linux"
+		sed -i 's',"$original","$new",'g' "$file"
+
+	fi
+}
+
 function pkg_installed() {
 	man "$1" &> /dev/null
 	local status=$? #if the man page exists status will be 0, else 1
@@ -105,7 +148,7 @@ make_colorful #blue "theme"
 clear #makes entire screen blue
 trap ctrl_c INT
 print_top_border
-#gets directory that current script is in
+#gets path to directory that current script is in
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 echo "| Welcome!"
@@ -131,39 +174,22 @@ replace_default_directory
 echo "| Okay -- by default, teapot will play songs from $MUSIC_DIR"
 echo "|"
 
-#check OS, remove uneeded teapot, make executable, check if other "teapot" is installed
-isinstalled=$(which teapot)
-
+#check OS, remove uneeded teapot, make executable
+#playername is teapot or teapot2, depending on if another teapot is installed
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
 	cd "$DIR" || exit
 	rm teapot
 	echo "| Since you're on Linux, we'll brew you the penguin tea."
-	if pkg_installed "teapot" || [ -n "$isinstalled" ]; then
-		echo "| You already have a program named teapot installed."
-		echo "| We'll name this one 'teapot2', then."
-		PLAYERNAME="teapot2"
-		mv teapot4linux teapot2
-		chmod +x teapot2
-	else
-		PLAYERNAME="teapot"
-		mv teapot4linux teapot
-		chmod +x teapot
-	fi
+	mv teapot4linux "$PLAYERNAME"
+	chmod +x "$PLAYERNAME"
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
 	cd "$DIR" || exit
 	rm teapot4linux
 	echo "| Since you're on MacOS, we'll brew you the apple tea."
-	if pkg_installed "teapot" || [ -n "$isinstalled" ]; then
-		echo "| You already have a program named teapot installed."
-		echo "| We'll name this one 'teapot2', then."
-		PLAYERNAME="teapot2"
-		mv teapot teapot2
-		chmod +x teapot2
-	else
-		PLAYERNAME="teapot"
-		chmod +x teapot
-	fi
+	mv teapot "$PLAYERNAME"
+	chmod +x "$PLAYERNAME"
+
 fi
 
 echo 

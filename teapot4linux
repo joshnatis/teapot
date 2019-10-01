@@ -91,6 +91,12 @@ function float_to_int() {
 	echo "$var"
 }
 
+#Convert input from a real number to an integer (POSIX-compliant)
+function float_to_int2() {
+	awk 'BEGIN{for (i=1; i<ARGC;i++)
+	printf "%.0f\n", ARGV[i]}' "$@"
+}
+
 function bold() {
 	tput bold
 }

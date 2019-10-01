@@ -100,7 +100,6 @@ function bold() {
 function unbold() {
 	tput sgr0
 	make_colorful
-
 }
 
 function stop_song() {
