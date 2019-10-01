@@ -60,8 +60,15 @@ function ctrl_c() {
 
 function pkg_installed() {
 	man "$1" &> /dev/null
-	local status=$? #if the man page exists status will be 0, else 1
-	return $status
+	local man_status=$? #if the man page exists status will be 0, else 1
+
+	installed=$(which "$1")
+
+	if [ $man_status -eq 0 ] || [ -n "$installed" ]; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 function is_not_base_10() {
@@ -193,7 +200,7 @@ function download_song() {
 		fi
 
 	else
-		bold; echo "You must have youtube-dl and ffmpeg installed. Install using your desired package manager then try again."; unbold; read -t 4
+		bold; echo "You must have youtube-dl and ffmpeg installed to use this feature. Install using your desired package manager then try again."; unbold; read -t 4
 	fi
 }
 

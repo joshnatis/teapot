@@ -58,8 +58,15 @@ function ctrl_c() {
 
 function pkg_installed() {
 	man "$1" &> /dev/null
-	local status=$? #if the man page exists status will be 0, else 1
-	return $status
+	local man_status=$? #if the man page exists status will be 0, else 1
+
+	installed=$(which "$1")
+
+	if [ $man_status -eq 0 ] || [ -n "$installed" ]; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 function is_not_base_10() {
@@ -183,7 +190,7 @@ function queue_previous() {
 
 #Download song, update number of songs, update array of songs
 function download_song() {
-	if pkg_installed "youtube-dl"; then
+	if pkg_installed "youtube-dl" && pkg_installed "ffmpeg"; then
 		bold; read -r -p "Enter URL: " URL && cd "$MUSIC_DIR"; unbold
 		youtube-dl --extract-audio --audio-format mp3 --output "%(title)s.%(ext)s" "$URL" 2> /dev/null && NUM_SONGS=$(num_songs) && MUSIC_LIST=( $EXTENSIONS )
 		
@@ -199,7 +206,7 @@ function download_song() {
 		fi
 
 	else
-		bold; echo "You don't have youtube-dl installed. Install using your desired package manager then try again."; unbold; read -t 4
+		bold; echo "You must have youtube-dl and ffmpeg installed to use this feature. Install using your desired package manager then try again."; unbold; read -t 4
 	fi
 }
 
@@ -222,7 +229,7 @@ function pick_song() {
 
 		#quit
 		if [[ "$char" = "q" ]]; then
-	       	show_music_player && return
+			show_music_player && return
 		#show songs
 		elif [[ "$char" = "l" ]]; then
 			show_songs
@@ -263,7 +270,7 @@ function print_ascii_art() {
 	echo "| |   _________________________  |"
 	echo "| |  |                        |  |"
 	echo "| |  |                        |  |"
-	echo "| |   ${MUSIC_LIST[$SONG_INDEX]}  "
+	echo "| |  |${MUSIC_LIST[$SONG_INDEX]}  "
 	echo "| |  |                        |  |"
 	echo "| |  |________________________|  |"
 	echo "| |                              |"
