@@ -11,8 +11,9 @@ function check_os() {
 	fi
 }
 
-#sets PLAYMUSICWITH and PLAYERNAME
+#sets PLAYERNAME (teapot or teapot2)
 function check_requirements() {
+	#macos needs afplay and afinfo
 	if [[ "$OSTYPE" == "darwin"* ]]; then
 		if pkg_installed "afplay" && pkg_installed "afinfo"; then
 			:
@@ -21,19 +22,18 @@ function check_requirements() {
 			read -t 5
 			ctrl_c
 		fi
-
+	#linux needs ffmpeg
 	elif [[ "$OSTYPE" == "linux-gnu" ]]; then
-		local ffmpeg_installed=$(which ffmpeg 2> /dev/null)
 
-		if [ -n "$ffmpeg_installed" ]; then
+		if ! pkg_installed "ffmpeg"; then
 			echo "Uh oh, you don't have ffmpeg installed. Go get 'em, tiger!"
 			read -t 5
 			ctrl_c
 		fi
-	fi
 
-	local other_teapot_installed=$(which teapot 2> /dev/null)
-	if [ -n "$other_teapot_installed" ]; then
+	fi
+	#if another teapot exists, rename this one to teapot2
+	if pkg_installed "teapot"; then
 		echo "| You already have a program named teapot installed."
 		echo "| We'll name this one 'teapot2', then."
 		PLAYERNAME="teapot2"
@@ -41,10 +41,9 @@ function check_requirements() {
 		PLAYERNAME="teapot"
 	fi
 
-	local bc_installed=$(which bc 2> /dev/null)
-	local awk_installed=$(which awk 2> /dev/null)
-	if [ -z "$bc_installed" ]; then
-		if [ -z "$awk_installed" ]; then
+	#if bc is not installed, try to use awk. if awk is not installed, exit
+	if ! pkg_installed "bc"; then
+		if ! pkg_installed "awk"; then
 			echo "| You have neither bc nor awk installed. Go install one!"
 			read -t 5
 			ctrl_c
@@ -151,8 +150,15 @@ function replace_mpg123_with_ffplay() {
 
 function pkg_installed() {
 	man "$1" &> /dev/null
-	local status=$? #if the man page exists status will be 0, else 1
-	return $status
+	local man_status=$? #if the man page exists status will be 0, else 1
+
+	installed=$(which "$1" 2> /dev/null)
+
+	if [ $man_status -eq 0 ] || [ -n "$installed" ]; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 function validate_directory() {
