@@ -24,15 +24,11 @@ function check_requirements() {
 
 	elif [[ "$OSTYPE" == "linux-gnu" ]]; then
 		local ffmpeg_installed=$(which ffmpeg 2> /dev/null)
-		local mpg123_installed=$(which mpg123 2> /dev/null)
 
-		if [ -n "$mpg123_installed" ]; then
-			: #by default, the mpg123 player will be used
-		elif [ -n "$ffmpeg_installed" ]; then
-			#mpg123 is not installed, use ffplay instead
-			replace_mpg123_with_ffplay
-		else
-			echo "Uh oh, you don't have mpg123 nor ffmpeg installed. Go get 'em, tiger!"
+		if [ -n "$ffmpeg_installed" ]; then
+			echo "Uh oh, you don't have ffmpeg installed. Go get 'em, tiger!"
+			read -t 5
+			ctrl_c
 		fi
 	fi
 
@@ -137,13 +133,18 @@ function replace_mpg123_with_ffplay() {
 	local original='mpg123 -q --no-gapless -D 0.5 --no-seekbuffer "$MUSIC_DIR"/"${MUSIC_LIST[$SONG_INDEX]}" &'
 	local new='ffplay -nodisp "$MUSIC_DIR"/"${MUSIC_LIST[$SONG_INDEX]}" &> /dev/null'
 
+	local original2="killall mpg123 &> /dev/null"
+	local new2="killall ffplay &> /dev/null"
+
 	if [[ "$OSTYPE" == "darwin"* ]]; then
 		local file="teapot"
 		sed -i "" 's',"$original","$new",'g' "$file"
+		sed -i "" 's',"$original2","$new2",'g' "$file"
 
 	elif [[ "$OSTYPE" == "linux-gnu" ]]; then
 		local file="teapot4linux"
 		sed -i 's',"$original","$new",'g' "$file"
+		sed -i 's',"$original2","$new2",'g' "$file"
 
 	fi
 }
