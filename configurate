@@ -27,9 +27,10 @@ function check_requirements() {
 		local mpg123_installed=$(which mpg123 2> /dev/null)
 
 		if [ -n "$mpg123_installed" ]; then
-			PLAYMUSICWITH="mpg123"
+			: #by default, the mpg123 player will be used
 		elif [ -n "$ffmpeg_installed" ]; then
-			PLAYMUSICWITH="ffmpeg"
+			#mpg123 is not installed, use ffplay instead
+			replace_mpg123_with_ffplay
 		else
 			echo "Uh oh, you don't have mpg123 nor ffmpeg installed. Go get 'em, tiger!"
 		fi
@@ -120,6 +121,21 @@ function replace_default_directory() {
 function replace_bc_with_awk() {
 	local original='INT_DURATION=$(float_to_int "$FLOAT_DURATION")'
 	local new='INT_DURATION=$(float_to_int2 "$FLOAT_DURATION")'
+
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+		local file="teapot"
+		sed -i "" 's',"$original","$new",'g' "$file"
+
+	elif [[ "$OSTYPE" == "linux-gnu" ]]; then
+		local file="teapot4linux"
+		sed -i 's',"$original","$new",'g' "$file"
+
+	fi
+}
+
+function replace_mpg123_with_ffplay() {
+	local original='mpg123 -q --no-gapless -D 0.5 --no-seekbuffer "$MUSIC_DIR"/"${MUSIC_LIST[$SONG_INDEX]}" &'
+	local new='ffplay -nodisp "$MUSIC_DIR"/"${MUSIC_LIST[$SONG_INDEX]}" &> /dev/null'
 
 	if [[ "$OSTYPE" == "darwin"* ]]; then
 		local file="teapot"

@@ -295,6 +295,7 @@ function play_song() {
 
 	#Play song file (process runs in the background)
 	mpg123 -q --no-gapless -D 0.5 --no-seekbuffer "$MUSIC_DIR"/"${MUSIC_LIST[$SONG_INDEX]}" &
+	#ffplay -nodisp "$MUSIC_DIR"/"${MUSIC_LIST[$SONG_INDEX]}" &> /dev/null
 
 	#if not replaying last song, add currently playing song to history (at the end of the array)
 	if not_replay; then
