@@ -3,8 +3,6 @@
 #==== FIXES ====
 #TODO - if possible, pause
 #TODO - fix bug with delete not working when asking for index
-#TODO - find strange bug with n not working sometimes
-#TODO - fix mpg123 weird song start crackle
 
 #==== FEATURES ====
 #TODO - add (r)ename option (enter new name: mv $MUSIC_DIR/MUSIC_LIST(SONG_INDEX $MUSIC_DIR/new name)
@@ -23,6 +21,7 @@
 #TODO - show metadata option (afinfo, mpg123, ffprobe)
 #TODO - integrate all options from mpg123 into linux version
 #TODO - arrowkeys for next/back
+#TODO - add options to add to playlist (display list of playlists available, + to make new one, stored in .teapot-playlists), play playlist
 
 
 
@@ -33,7 +32,7 @@
 #REQUESTED_INDEX - either SHUFFLE or number between 0 - NUM_SONGS, used as parameter for play_song (processed into SONG_INDEX)
 #SONG_INDEX - random or specified number between 0 - NUM_SONGS, used as index to access song file from MUSIC_LIST
 #EXTENSIONS - file extensions *.mp3, *.wav, etc (feel free to modify, preserving current format)
-#HISTORY - array of indeces of all songs played in current session
+#HISTORY - array of indices of all songs played in current session
 # ========== /GLOBAL VARIABLES ==========
 
 
