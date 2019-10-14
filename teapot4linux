@@ -8,8 +8,6 @@
 
 #==== FEATURES ====
 #TODO - add (r)ename option (enter new name: mv $MUSIC_DIR/MUSIC_LIST(SONG_INDEX $MUSIC_DIR/new name)
-#TODO - loop feature (dont update SONGINDEX)
-	#display unloop_options (unloop, quit)
 #TODO - get_duration function (possibly show duration on main screen, update it in loop - SECONDS)
 #TODO - consider putting caffeinate in setup 
 #TODO - add h for help/or tutorial
@@ -255,6 +253,33 @@ function pick_song() {
 	done
 }
 
+function toggle_repeat_mode() {
+	clearscreen
+	print_ascii_art
+	bold; echo "(q)uit, (d)isable repeat mode"; unbold
+
+	local choice="timeout"
+
+	while :; do
+		REQUESTED_INDEX="$SONG_INDEX" #current playing song's index
+
+		read -n 1 -s -t $(($INT_DURATION - $SECONDS)) choice #if the song ends, we'll enter the choice="timeout" procedure
+		if [ "$choice" = "q" ]; then
+			ctrl_c
+		elif [ "$choice" = "d" ]; then
+			REQUESTED_INDEX="SHUFFLE" #repeat mode off, go back to shuffle
+			return
+		elif [ "$choice" = "timeout" ]; then
+			SECONDS=0 #reset seconds count before playing next song
+			clearscreen
+			play_song "$REQUESTED_INDEX"
+			bold; echo "(q)uit, (d)isable repeat mode"; unbold
+		else
+			choice="timeout"
+		fi
+	done
+}
+
 function show_music_player() {
 	print_ascii_art
 	show_options "$INT_DURATION" "1"
@@ -317,7 +342,7 @@ function show_options() {
 	#"TIMEOUT" is a default value; if $option still equals "TIMEOUT" after read, we know the user didn't input anything
 	local option="TIMEOUT"
 
-	echo "(n)ext, (b)ack, (p)ick, (l)ibrary, (q)uit, (d)ownload"
+	echo "(n)ext, (b)ack, (p)ick, (l)ibrary, (q)uit, (d)ownload, (r)epeat"
 	
 	#we only want to set seconds to 0 when we start playing a new song ($2 will be "1" if song is already playing)
 	if [ "$2" == "" ]; then
@@ -361,6 +386,11 @@ function show_options() {
 		download_song
 		show_music_player
 	#Invalid input; show options again and do nothing
+	elif [ "$option" = "r" ]; then
+		toggle_repeat_mode #holds user in this function until they exit repeat mode
+		clearscreen
+		print_ascii_art
+		show_options "$(($INT_DURATION - $SECONDS))" "1" #don't reset elapsed time
 	else
 		show_music_player
 	fi
