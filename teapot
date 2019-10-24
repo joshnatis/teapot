@@ -37,17 +37,17 @@
 # ========== HELPER FUNCTIONS ==========
 
 #theme function
-function make_colorful() {
+make_colorful() {
 	#tput setab 4
 	#tput setaf 7
 	:
 }
 
-function clearscreen() {
+clearscreen() {
 	clear && printf '\e[3J'
 }
 
-function ctrl_c() {
+ctrl_c() {
 	#unbold
 	tput sgr0
 	stop_song
@@ -55,7 +55,7 @@ function ctrl_c() {
 	exit 0
 }
 
-function pkg_installed() {
+pkg_installed() {
 	man "$1" &> /dev/null
 	local man_status=$? #if the man page exists status will be 0, else 1
 
@@ -68,7 +68,7 @@ function pkg_installed() {
 	fi
 }
 
-function is_not_base_10() {
+is_not_base_10() {
 	local first_char="${1:0:1}"
 	local num_digits=$(printf "$1" | wc -m) #wc -m counts chars
 
@@ -80,11 +80,11 @@ function is_not_base_10() {
 	fi
 }
 
-function is_not_digit() {
+is_not_digit() {
 
 	local re='^[0-9]+$'
 
-	if ! [[ "$1" =~ $re ]] || is_not_base_10; then # $1 is not a digit, return error code 0 (sucess)
+	if ! [[ "$1" =~ $re ]] || is_not_base_10 "$1"; then # $1 is not a digit, return error code 0 (sucess)
    		return 0
    	fi
 
@@ -92,39 +92,39 @@ function is_not_digit() {
 }
 
 #Ceiling + 1 using bc
-function float_to_int() {
+float_to_int() {
 	local var=$(echo "$1/1 + 2" | bc)
 	echo "$var"
 }
 
-function bold() {
+bold() {
 	tput bold
 }
 
-function unbold() {
+unbold() {
 	tput sgr0
 	make_colorful
 }
 
-function stop_song() {
+stop_song() {
 	killall afplay &> /dev/null
 	clearscreen
 }
 
 #Finds number of songs in directory (MUSIC_DIR)
-function num_songs() {
+num_songs() {
 	ls -l "$MUSIC_DIR"/$EXTENSIONS 2> /dev/null | wc -l
 	#Note: the command "2> /dev/null" redirects error messages, but leaves regular output
 }
 
-function is_invalid_index() {
+is_invalid_index() {
 	if is_not_digit "$1" || [ "$1" -gt "$NUM_SONGS" ] || [ "$1" -lt 0 ]; then
 		return 0
 	fi		
 	return 1
 }
 
-function not_replay() {
+not_replay() {
 	#if this is the first song, or if the current song is already recorded in history
 	if [ "${#HISTORY[@]}" -eq 0 ] || [ "$SONG_INDEX" != "${HISTORY[${#HISTORY[@]}-1]}" ]; then
 		return 0
@@ -134,7 +134,7 @@ function not_replay() {
 # ========== /HELPER FUNCTIONS ==========
 
 # ========== MAIN FUNCTIONS ==========
-function setup() {
+setup() {
 	trap ctrl_c INT #if the user enters ctrl -c, allow me to do cleanup first
 
 	#If the number of args > 1, exit
@@ -168,19 +168,19 @@ function setup() {
 }
 
 #List files/indexes for user and allow them to scroll through in less
-function show_songs() {
+show_songs() {
 	#NF - Last field (File name), NR - Row number, less -S turns off word fold
 	bold; find "$MUSIC_DIR"/$EXTENSIONS 2> /dev/null | awk -F'/' '{print "["NR-1"]\t" $NF}' | less -S; unbold
 }
 
 #Set REQUESTED_INDEX to the previous song played
-function queue_previous() {
+queue_previous() {
 	#pop last element of the history array
 	REQUESTED_INDEX="${HISTORY[${#HISTORY[@]}-1]}"
 }
 
 #Download song, update number of songs, update array of songs
-function download_song() {
+download_song() {
 	if pkg_installed "youtube-dl" && pkg_installed "ffmpeg"; then
 		bold; read -r -p "Enter URL: " URL && cd "$MUSIC_DIR"; unbold
 		youtube-dl --extract-audio --audio-format mp3 --output "%(title)s.%(ext)s" "$URL" 2> /dev/null && NUM_SONGS=$(num_songs) && MUSIC_LIST=( $EXTENSIONS )
@@ -201,14 +201,14 @@ function download_song() {
 	fi
 }
 
-function show_pick_song_options() {
+show_pick_song_options() {
 	print_ascii_art
 	bold; echo "(q)uit, (l)ibrary"; unbold
 	bold; printf "|"; unbold; printf "| Play Song #: "
 }
 
 #Sets REQUESTED_INDEX to user specified song index
-function pick_song() {
+pick_song() {
 	local index #used to store potential index for next song
 	stty sane #fixes strange bug with delete key not being picked up
 	show_pick_song_options
@@ -246,7 +246,7 @@ function pick_song() {
 	done
 }
 
-function toggle_repeat_mode() {
+toggle_repeat_mode() {
 	clearscreen
 	print_ascii_art
 	bold; echo "(q)uit, (d)isable repeat mode"; unbold
@@ -273,12 +273,12 @@ function toggle_repeat_mode() {
 	done
 }
 
-function show_music_player() {
+show_music_player() {
 	print_ascii_art
 	show_options "$INT_DURATION" "1"
 }
 
-function print_ascii_art() {
+print_ascii_art() {
 	clearscreen
 	#formatting (optimized for 80 by 24 terminal window)
 	tput rmam #disables line wrap
@@ -306,7 +306,7 @@ function print_ascii_art() {
 }
 
 #Prints formatting, plays random song, defines a global variable with duration of current song
-function play_song() {
+play_song() {
 	if [ "$1" = "SHUFFLE" ]; then
 		SONG_INDEX=$(($RANDOM % $NUM_SONGS)) #Get random index in range of NUM_SONGS
 	else
@@ -329,7 +329,7 @@ function play_song() {
 }
 
 #Prints options, times out after song ends so another one can play
-function show_options() {
+show_options() {
 	#If no option is provided before the song stops playing, then go to the next song
 	#"TIMEOUT" is a default value; if $option still equals "TIMEOUT" after read, we know the user didn't input anything
 	local option="TIMEOUT"
