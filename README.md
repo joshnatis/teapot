@@ -38,7 +38,7 @@ Now go drink your tea, it's that simple.
 
 
 ## Compatability notes
-**teapot** has been tested on multiple computers and shells, and linted with [shellcheck](https://www.shellcheck.net/). It was confirmed to work on MacOS, Manjaro Linux, and noteably Arch Linux. It should work in most shells, but when in doubt, use `bash`. If you find any bugs or have any issues, please reach out to me at:
+**teapot** has been tested on multiple computers and shells, and linted with [shellcheck](https://www.shellcheck.net/). It was confirmed to work on MacOS, Manjaro Linux, and Arch Linux. It should work in most shells, but when in doubt, use `bash`. If you find any bugs or have any issues, please reach out to me at:
 
 `josh at josh8 dot com`
 
@@ -46,3 +46,8 @@ Now go drink your tea, it's that simple.
 It was my goal to have **teapot** be free of any dependencies. If you needed ten external libraries installed just to use my program, you'd might as well go ahead and download a full fledged application (maybe even with an ooey gooey GUI... fooey).
 
 On MacOS, **teapot** uses the `afplay`and `afinfo` commands to deal with audio -- these are native to the OS and come installed by default. On Ganoo Linocks (read: any Linux distribution), **teapot** uses `ffmpeg` for the same purposes. This is far from ideal, but, to be fair, if you're a Linux user you probably have `ffmpeg` installed already. The script can also work with `mpg123` (in fact there is a commented line containing the `mpg123` command that can replace `ffmpeg`), or any utility that can play audio (I would have used `aplay` but it only works for raw audio files).
+
+## Licensing
+This ware is presented to you with no warranty, but with best wishes.
+
+It is my wish to provide something available for your full use, modification, and redistribution (through preferably with credit when it's applicable) and I have no desire to limit your rights in any way. I do not wish to impose anything on you whatsoever with your use of this software. For this reason I will not adopt the GNU General Public License (due to its recursive copyleft), though I do put forward my preference that you "pass it forward" by keeping the ware free and open, if you choose to redistribute it. Lastly, I encourage you to contribute to `teapot`'s structural integrity.
