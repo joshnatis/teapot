@@ -2,7 +2,7 @@
 ![Logo](images/teapot-logo-small.png) ![Screenshot](images/teapot-screenshot2.png)
 
 ## A word of caution
-The tea isn't finished brewing yet! I'm still in the middle of ~~porting this to Linux~~, adding features, learning about licenses, and ~~creating a configuration script~~. This is very much a work in progress. Otherwise, enjoy :)
+The tea isn't finished brewing yet! I'm still in the middle of ~~porting this to Linux~~, adding features, ~~learning about licenses~~, and ~~creating a configuration script~~. This is very much a work in progress. Otherwise, enjoy :)
 
 Also, if you want to watch me explain how the program works (for my own future reference), you can click [here](https://www.youtube.com/watch?v=oJpkSBohS0U).
 
