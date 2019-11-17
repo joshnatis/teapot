@@ -161,6 +161,25 @@ setup() {
 		exit 1
 	fi
 
+	#----
+	#THE FOLLOWING ARE SOLUTIONS TO GLOBS NOT EXPANDING
+	#PREVIOUS: EXTENSIONS="*.mp3 *.pcm *.wav *.aac *.ogg *.m4a *.aif *.flac"
+
+	#SOLUTION 1
+	EXTENSIONS=()
+	ext_list=("*.mp3" "*.pcm" "*.wav" "*.aac" "*.ogg" "*.m4a" "*.aif" "*.flac")
+	for ext in "${ext_list[@]}"
+	do
+		if ls ./$ext &> /dev/null; then #files exist
+   			EXTENSIONS="$EXTENSIONS $ext"
+   		fi
+	done
+
+	#SOLUTION 2 (bash only)
+	#shopt -s nullglob
+
+	#----
+
 	#Create array of all audio files in MUSIC_DIR
 	MUSIC_LIST=( $EXTENSIONS )
 	
@@ -174,7 +193,7 @@ setup() {
 #List files/indexes for user and allow them to scroll through in less
 show_songs() {
 	#NF - Last field (File name), NR - Row number, less -S turns off word fold
-	bold; find "$MUSIC_DIR"/$EXTENSIONS 2> /dev/null | awk -F'/' '{print "["NR-1"]\t" $NF}' | less -S; unbold
+	bold; find "$MUSIC_DIR"/${ext_list[@]} 2> /dev/null | awk -F'/' '{print "["NR-1"]\t" $NF}' | less -S; unbold
 }
 
 
