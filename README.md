@@ -11,6 +11,13 @@ Also, if you want to watch me explain how the program works (for my own future r
 
 Really, **teapot** is a minimal text-based command-line music player -- noteably with no dependencies (well, almost). This is not bloatware.
 
+## How to use teapot
+Option 1: shuffle songs from your default directory
+<pre> teapot </pre>
+Option 2: shuffle songs from a specified directory
+<pre> teapot /path/to/directory </pre>
+Now go drink your tea, it's that simple.
+
 ## How to set up teapot
 1. `git clone https://github.com/joshnatis/teapot.git`
 1. `cd teapot/`
@@ -29,13 +36,26 @@ This is what the script does:
 * asks you for the location of your other shell scripts and moves `teapot` there (or allows you to move the script manually)
 * cleans up the mess by deleting the cloned folder and all of its contents
 
-## How to use teapot
-Option 1: shuffle songs from your default directory
-<pre> teapot </pre>
-Option 2: shuffle songs from a specified directory
-<pre> teapot /path/to/directory </pre>
-Now go drink your tea, it's that simple.
+### So you don't want to use the configuration script...
+That's okay. Here's what you should do:
 
+1. If you're on MacOS download the file titled `teapot`, otherwise download `teapot4linux` (and if you're on Windows, you're shit outta luck, buddy).
+
+2. Open up the source code in your favorite editor and scroll all the way down to the bottom of the file. You'll see this line `MUSIC_DIR=~/Downloads #default directory of audio files` (line 417 on `teapot`, 421 on `teapot4linux`) -- change the path to your desired directory (one which contains your music files).
+
+3. If you're on MacOS, skip to step 7.
+
+4. Okay Linux peoplez, now that the Apple fanboys are gone we can finally talk about cool things like Ubuntu and hacking Facebook. At this point you need to determine whether you have `ffmpeg` installed (technically you can use any utility that plays audio, but that's up to you to figure out). If you don't have `ffmpeg`, get it.
+
+5. Now, make sure you have either `awk` or `bc` installed. If you have both or only `bc` installed, do nothing. If you only have `awk` installed, scroll all the way down to line 432, `INT_DURATION=$(float_to_int "$FLOAT_DURATION")` and change `float_to_int` to `float_to_int2`.
+
+6. Rename the script to `teapot` (make sure there's no other program installed with the same name)
+
+7. Hi Mac people, you didn't miss much. Now we're all done setting up the script. Make it executable with `chmod +x teapot`.
+
+8. Move the script to a directory where you keep your other shell scripts. If you don't have one, check out my [repository of shell scripts](https://github.com/joshnatis/shell-skriptz) and follow my directions for setting one up. The important thing is for the directory to be specified in your PATH environment variable, so that you can call `teapot` simply by typing `teapot`.
+
+9. That's all, I hope. Don't forget to enjoy!
 
 ## Compatability notes
 **teapot** has been tested on multiple computers and shells, and linted with [shellcheck](https://www.shellcheck.net/). It was confirmed to work on MacOS, Manjaro Linux, and Arch Linux. It should work in most shells, but when in doubt, use `bash`. If you find any bugs or have any issues, please reach out to me at:
@@ -50,4 +70,4 @@ On MacOS, **teapot** uses the `afplay`and `afinfo` commands to deal with audio -
 ## Licensing
 This ware is presented to you with no warranty, but with best wishes.
 
-It is my wish to provide something available for your full use, modification, and redistribution (through preferably with credit when it's applicable) and I have no desire to limit your rights in any way. I do not wish to impose anything on you whatsoever with your use of this software. For this reason I will not adopt the GNU General Public License (due to its recursive copyleft), though I do put forward my preference that you "pass it forward" by keeping the ware free and open, if you choose to redistribute it. Lastly, I encourage you to contribute to `teapot`'s structural integrity.
+It is my wish to provide something available for your full use, modification, and redistribution (through preferably with credit when it's applicable) and I have no desire to limit your rights in any way. I do not wish to impose anything on you whatsoever with your use of this software. However, I do put forward my preference that you "pass it forward" by keeping the ware free and open, if you choose to redistribute it. Lastly, I encourage you to contribute to `teapot`'s structural integrity. MIT license.
