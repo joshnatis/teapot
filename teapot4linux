@@ -147,6 +147,13 @@ setup() {
 		exit 1 
 	#If the number of args = 1, that arg must be a path to your music files
 	elif [ "$#" -eq 1 ]; then
+		#help menu
+		if [ "$1" = "-h" ]; then
+			echo "Usage:"
+			echo "* teapot"
+			echo "* teapot path/to/directory/containing/audio/files"
+			exit 1
+		fi
 		#Set MUSIC_DIR to user-specified path to audio files
 		MUSIC_DIR="$1"
 	fi
@@ -402,12 +409,18 @@ show_options() {
 	elif [ "$option" = "d" ]; then
 		download_song
 		show_music_player
-	#Invalid input; show options again and do nothing
+	#turn on looping mode
 	elif [ "$option" = "r" ]; then
 		toggle_repeat_mode #holds user in this function until they exit repeat mode
 		clearscreen
 		print_ascii_art
 		show_options "$(($INT_DURATION - $SECONDS))" "1" #don't reset elapsed time
+	#restart the song from the beginning
+	elif [ "$option" = "k" ]; then
+		stop_song
+		play_song "$SONG_INDEX"
+		show_options
+	#Invalid input; show options again and do nothing
 	else
 		show_music_player
 	fi
