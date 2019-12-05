@@ -6,6 +6,8 @@ The tea isn't finished brewing yet! I'm still in the middle of ~~porting this to
 
 Also, if you want to watch me explain how the program works (for my own future reference), you can click [here](https://www.youtube.com/watch?v=oJpkSBohS0U).
 
+CURRENT TODO: Apply updates to `teapot`, fix `pause` time bug, add help flag to `teapot4linux`, update `configurate` script (or even remove it).
+
 ## What is teapot?
 **teapot** is a recursive acronym, short for *teapot, enjoy a peaceful, open tune*. Legend has it that the *o* actually stands for *oraguntan*, but $CREATOR will never tell. Let's also pretend that the *o* stands for *open* in reference to Open Source, and not because I couldn't think of any other words that start with *o*.
 
