@@ -101,8 +101,8 @@ unbold() {
 
 stop_song() {
 	#killall mpg123 &> /dev/null
-	#killall ffplay &> /dev/null
-	ps -ef | grep ffplay | grep -v grep | awk '{print $2}' | xargs kill
+	killall ffplay &> /dev/null
+	#ps -ef | grep ffplay | grep -v grep | awk '{print $2}' | xargs kill
 
 	clearscreen
 }
@@ -127,6 +127,7 @@ not_replay() {
 	fi
 	return 1
 }
+
 # ========== /HELPER FUNCTIONS ==========
 
 # ========== MAIN FUNCTIONS ==========
@@ -139,6 +140,13 @@ setup() {
 		exit 1 
 	#If the number of args = 1, that arg must be a path to your music files
 	elif [ "$#" -eq 1 ]; then
+		#help menu
+		if [ "$1" = "-h" ]; then
+			echo "Usage:"
+			echo "* teapot"
+			echo "* teapot path/to/directory/containing/audio/files"
+			exit 1
+		fi
 		#Set MUSIC_DIR to user-specified path to audio files
 		MUSIC_DIR="$1"
 	fi
@@ -191,7 +199,6 @@ show_songs() {
 	bold; find "$MUSIC_DIR"/${ext_list[@]} 2> /dev/null | awk -F'/' '{print "["NR-1"]\t" $NF}' | less -S; unbold
 }
 
-
 #Set REQUESTED_INDEX to the previous song played
 queue_previous() {
 	#pop and return ast element of the history array
@@ -222,6 +229,7 @@ download_song() {
 
 display_help_menu() {
 	local choice="timeout"
+
 	if [ "$1" = "full" ]; then
 		echo "------------------"
 		echo " TEAPOT HELP MENU"
@@ -254,6 +262,7 @@ display_help_menu() {
 		else
 			choice="timeout"
 		fi
+
 	elif [ "$1" = "short" ]; then
 		print_ascii_art
 		bold; echo "(n)ext, (b)ack, (q)uit, (s)top, (r)epeat, (p)ick, (l)ibrary, (d)ownload, (h)elp"
@@ -423,14 +432,17 @@ show_options() {
 	#Next song; OR song duration has expired
 	if [ "$option" = "n" ] || [ "$option" = "TIMEOUT" ]; then
 		stop_song
+
 	#list available songs
 	elif [ "$option" = "l" ]; then
 		show_songs
 		show_music_player
+
 	#ask user to pick a song
 	elif [ "$option" = "p" ]; then
 		pick_song "Play" #Sets REQUESTED_INDEX to valid index
 		stop_song
+
 	#play previous song
 	elif [ "$option" = "b" ]; then
 		#Remove current song from history (unless there's only 1 song in history)
@@ -439,19 +451,23 @@ show_options() {
 		fi
 		queue_previous
 		stop_song
+
 	#FOR DEBUGGING - show history
 	elif [ "$option" = "1" ]; then
 		echo "Length: ${#HISTORY[@]}"
 		printf '%s ' "${HISTORY[@]}"
 		read -t 3
 		show_music_player
+
 	#quit
 	elif [ "$option" = "q" ]; then
 		ctrl_c
+
 	#download song from url
 	elif [ "$option" = "d" ]; then
 		download_song
 		show_music_player
+
 	#pause/resume
 	elif [ "$option" = "s" ]; then
 		kill -TSTP $! #gentle terminal stop signal (ctrl z) -- reversable
@@ -466,28 +482,35 @@ show_options() {
 			ctrl_c
 		fi
 		show_music_player "$(($INT_DURATION  - $remaining))" #don't reset elapsed time
+
 	#loop mode
 	elif [ "$option" = "r" ]; then
 		toggle_repeat_mode #holds user in this function until they exit repeat mode
 		show_music_player "$(($INT_DURATION - $SECONDS))" "1" #don't reset elapsed time
+
 	#restart current track
 	elif [ "$option" = "k" ]; then
 		stop_song
 		play_song "$SONG_INDEX"
 		show_options
+
 	#add to queue
 	elif [ "$option" = "2" ]; then
 		pick_song "Queue" #adds song index to queue/play next
 		show_music_player "$(($INT_DURATION - $SECONDS))" "1" #don't reset elapsed time
+
 	elif [ "$option" = "3" ]; then
 		printf '%s ' "${QUEUE[@]}"
 		read -t 4
 		show_music_player
+
 	elif [ "$option" = "h" ]; then
 		clearscreen
 		display_help_menu "full"
+
 	elif [ "$option" = "v" ]; then
 		display_help_menu "short"
+		
 	#Invalid input; show options again and do nothing
 	else
 		show_music_player
@@ -498,7 +521,6 @@ show_options() {
 
 
 #The script will start executing here
-EXTENSIONS="*.mp3 *.pcm *.wav *.aac *.ogg *.m4a *.aif *.flac"
 MUSIC_DIR=~/Downloads #default directory of audio files
 setup "$@" #pass arguments to script into function
 
