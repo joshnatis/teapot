@@ -1,0 +1,141 @@
+#!/bin/bash
+
+#set blue theme
+make_colorful() {
+	tput setab 4
+	tput setaf 7
+	tput bold
+	clear
+}
+
+ctrl_c() {
+	tput sgr0
+	clear
+	exit 1
+}
+
+print_border() {
+	local cols=$(tput cols)
+	local rows=$(tput lines)
+
+	#print $cols - 2 equal signs
+	local start=3
+	local end=$cols
+	for ((i=$start; i<=$end; i++)); do printf "="; done
+}
+
+pkg_installed() {
+	man "$1" &> /dev/null
+	local man_status=$? #if the man page exists status will be 0, else 1
+
+	installed=$(which "$1" 2> /dev/null)
+
+	if [ $man_status -eq 0 ] || [ -n "$installed" ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+replace() {
+	if [ "$1" = "stop_song" ]; then
+		local default="killall ffplay"
+		local new="#killall ffplay"
+
+		local default2="#killall afplay"
+		local new2="killall afplay"
+
+	elif [ "$1" = "float_duration" ]; then
+		local default='FLOAT_DURATION=$(ffprobe'
+		local new='#FLOAT_DURATION=$(ffprobe'
+
+		local default2='#FLOAT_DURATION=$(afinfo'
+		local new2='FLOAT_DURATION=$(afinfo'
+
+	elif [ "$1" = "play_song" ]; then
+		local default="ffplay -nodisp"
+		local new="#ffplay -nodisp"
+
+		local default2="#afplay"
+		local new2="afplay"
+	fi
+
+	#this sed syntax only works for macos/freebsd, but it will only be called for macos so it's ok
+	sed -i "" 's',"$default","$new",'g' "$ORIGINAL_DIR/teapot"
+	sed -i "" 's',"$default2","$new2",'g' "$ORIGINAL_DIR/teapot"
+}
+
+#CHECK FOR afplay/ffmpeg AND REPLACE NECESSARY LINES OF CODE
+check_packages()
+{
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+		if ! pkg_installed "afplay" || ! pkg_installed "afinfo"; then
+			if ! pkg_installed "ffmpeg"; then
+				echo "| Uh oh, you don't have afplay or ffmpeg!"
+				echo "| Use homebrew to download it, then re-run this script :)"
+				exit 1
+			fi
+			#afplay not installed, ffmpeg installed
+			:
+		#afplay installed, need to replace lines
+		else
+			replace "stop_song"
+			replace "float_duration"
+			replace "play_song"
+		fi
+
+	elif [[ "$OSTYPE" == "linux-gnu" ]]; then
+		if ! pkg_installed "ffmpeg"; then
+			echo "| Uh oh, you don't have ffmpeg!"
+			echo "| Download it with your preferred package manager, then re-run this script :)"
+			exit 1
+		#ffmpeg installed
+		:
+		fi
+	fi
+}
+
+change_default_directory()
+{
+	echo "| Enter the path to a directory with most of your audio files: "
+	read -r -p "| " default_dir
+	eval cd "$default_dir"
+	while [ $? -eq 1 ]; do
+		read -r -p "| Invalid path. Try again: " default_dir
+		eval cd "$default_dir"
+	done
+
+	local default="MUSIC_DIR=~/Downloads"
+	local new="MUSIC_DIR=$default_dir" #change to user's specified path
+
+	if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "freebsd"* ]] ; then
+		sed -i "" 's',"$default","$new",'g' "$ORIGINAL_DIR/teapot"
+
+	elif [[ "$OSTYPE" == "linux-gnu" ]]; then
+		sed -i 's',"$default","$new",'g' "$ORIGINAL_DIR/teapot"
+	fi
+
+	cd $ORIGINAL_DIR #return to original directory
+}
+
+
+# ===== MAIN =====
+ORIGINAL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+trap ctrl_c INT
+make_colorful
+printf "Γ"; print_border; printf "ꓶ"
+
+echo "| Welcome to the teapot configuration script!"
+echo "|"
+check_packages
+change_default_directory
+chmod +x teapot
+echo "| Great, you're done!"
+echo "| Now, move the file 'teapot' to your desired location and enjoy :)"
+
+printf "L"; print_border; printf "⅃"
+echo ""
+echo ""
+read -p "Hit any key to end the script."
+tput sgr0
+clear
