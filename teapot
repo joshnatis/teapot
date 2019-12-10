@@ -495,7 +495,7 @@ show_options() {
 	elif [ "$option" = "3" ]; then
 		stop_song
 		play_song "$SONG_INDEX"
-		show_options
+		show_options "reset"
 
 	#add to queue
 	elif [ "$option" = "a" ]; then
