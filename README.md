@@ -34,7 +34,7 @@ That's okay. Here's what you should do:
 
 2. Open up the source code in your favorite editor and scroll all the way down to the bottom of the file. You'll see this line `MUSIC_DIR=~/Downloads #default directory of audio files` -- change the path to your desired directory (one which contains your music files).
 
-3. Search the script for `ffmpeg`, `ffplay`, and `ffprobe`, comment those lines out (using the `#`), and uncomment the lines next to them containing `afplay` and `afinfo`, respectively. If you have `ffmpeg` but not `afplay` (i.e. you're not on a Mac), you can skip this step, but make sure you have `awk` installed (you can check if the utilities are downloaded by executing `which ffmpeg` or `which awk`).
+3. If you're on a Mac, search the script for `ffmpeg`, `ffplay`, and `ffprobe`, comment those lines out (using the `#`), and uncomment the lines next to them containing `afplay` and `afinfo`, respectively. Others, make sure you have `awk` and `ffmpeg` installed (you can check if the utilities are downloaded by executing `which ffmpeg` or `which awk`).
 
 4. Make the script executable with `chmod +x teapot`.
 
