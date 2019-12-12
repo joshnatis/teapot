@@ -73,7 +73,7 @@ check_packages()
 			if ! pkg_installed "ffmpeg"; then
 				echo "| Uh oh, you don't have afplay or ffmpeg!"
 				echo "| Use homebrew to download it, then re-run this script :)"
-				exit 1
+				ctrl_c
 			fi
 			#afplay not installed, ffmpeg installed
 			:
@@ -88,7 +88,7 @@ check_packages()
 		if ! pkg_installed "ffmpeg"; then
 			echo "| Uh oh, you don't have ffmpeg!"
 			echo "| Download it with your preferred package manager, then re-run this script :)"
-			exit 1
+			ctrl_c
 		#ffmpeg installed
 		:
 		fi
