@@ -53,6 +53,6 @@ It was my goal to have **teapot** be free of any dependencies. If you needed ten
 On MacOS, **teapot** uses the `afplay`and `afinfo` commands to deal with audio -- these are native to the OS and come installed by default. On Ganoo Linocks (read: any Linux distribution), **teapot** uses `ffmpeg` for the same purposes. This is far from ideal, but, to be fair, if you're a Linux user you probably have `ffmpeg` installed already. The script can work with any utility that can play audio, though.
 
 ## Licensing
-This ware is presented to you with no warranty, but with best wishes.
+This ware is presented to you with no warranty, but with best wishes. The code is MIT Licensed. Do stuff with it.
 
-It is my wish to provide something available for your full use, modification, and redistribution (through preferably with credit when it's applicable) and I have no desire to limit your rights in any way. I do not wish to impose anything on you whatsoever with your use of this software. However, I do put forward my preference that you "pass it forward" by keeping the ware free and open, if you choose to redistribute it. Lastly, I encourage you to contribute to `teapot`'s structural integrity. MIT license.
+I put forward my preference that you "pass it forward" by keeping the ware free and open, if you choose to redistribute it. 
