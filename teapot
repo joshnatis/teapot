@@ -145,7 +145,7 @@ setup() {
 	#If the number of args = 1
 	elif [ "$#" -eq 1 ]; then
 		#help menu
-		if [ "$1" = "-h" ]; then
+		if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
 			echo "Usage:"
 			echo "* teapot"
 			echo "* teapot path/to/directory/containing/audio/files"
