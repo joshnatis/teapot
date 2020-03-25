@@ -481,7 +481,7 @@ show_options() {
 		read -n 1 resume
 		if [ "$resume" = "s" ]; then
 			kill -CONT $PID #resume process
-		elif [ "$resume" = "quit" ]; then
+		elif [ "$resume" = "q" ]; then
 			ctrl_c
 		fi
 		show_music_player "$elapsed" #pass in seconds elapsed (don't reset elapsed time)
