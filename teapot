@@ -223,7 +223,6 @@ download_song() {
 }
 
 display_help_menu() {
-	local choice="timeout"
 
 	if [ "$1" = "full" ]; then
 		echo "------------------"
@@ -250,13 +249,8 @@ display_help_menu() {
 		echo "------------------"
 		echo ""
 		echo "(q)uit help menu";
-		#if the song ends, we'll enter the choice="timeout" procedure
 		read -n 1 -s -t $(($INT_DURATION - $SECONDS)) choice
-		if [ "$choice" = "q" ] || [ "$choice" = "timeout" ]; then
-			show_music_player
-		else
-			choice="timeout"
-		fi
+		show_music_player
 
 	elif [ "$1" = "short" ]; then
 		print_ascii_art
