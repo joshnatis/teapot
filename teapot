@@ -472,12 +472,17 @@ show_options() {
 		print_ascii_art
 		bold; echo "(q)uit, (s)tart"; unbold
 		
-		read -n 1 resume
-		if [ "$resume" = "s" ]; then
-			kill -CONT $PID #resume process
-		elif [ "$resume" = "q" ]; then
-			ctrl_c
-		fi
+		local resume=""
+		while [ ! "$resume" = "s" ] && [ ! "$resume" = "q" ]
+		do
+			read -s -n 1 resume
+			if [ "$resume" = "s" ]; then
+				kill -CONT $PID #resume process
+			elif [ "$resume" = "q" ]; then
+				ctrl_c
+			fi
+		done
+
 		show_music_player "$elapsed" #pass in seconds elapsed (don't reset elapsed time)
 
 	#loop mode
